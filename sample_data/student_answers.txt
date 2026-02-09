@@ -1,0 +1,18 @@
+Sample Exam Answers - Computer Science Fundamentals
+
+Q1. What is machine learning?
+Answer: Machine learning is a subset of artificial intelligence that enables computers to learn from data without being explicitly programmed. It uses statistical algorithms to identify patterns in data and make predictions or decisions based on those patterns. Machine learning systems improve their performance over time as they are exposed to more data, making them particularly useful for tasks that are difficult to program using traditional rule-based approaches.
+
+Q2. Explain the difference between supervised and unsupervised learning.
+Answer: Supervised learning is a type of machine learning where the algorithm learns from labeled training data. Each example in the training set includes both input features and the corresponding correct output (label). The algorithm learns to map inputs to outputs by finding patterns in these labeled examples. Common applications include classification and regression tasks.
+
+Unsupervised learning, on the other hand, works with unlabeled data. The algorithm tries to discover hidden patterns or structures in the data without being told what to look for. It groups similar data points together or identifies underlying dimensions in the data. Common applications include clustering, dimensionality reduction, and anomaly detection.
+
+Q3. What is a neural network?
+Answer: A neural network is a computational model inspired by the structure and function of biological neurons in the human brain. It consists of interconnected layers of artificial neurons (nodes) that process and transmit information. Each connection between neurons has a weight that adjusts during training. Neural networks learn by adjusting these weights based on the error between predicted and actual outputs through a process called backpropagation. They are particularly effective for complex pattern recognition tasks like image recognition, natural language processing, and speech recognition.
+
+Q4. Describe the concept of overfitting in machine learning.
+Answer: Overfitting occurs when a machine learning model learns the training data too well, including its noise and outliers, rather than learning the underlying general patterns. An overfitted model performs excellently on training data but poorly on new, unseen data because it has essentially memorized the training examples rather than learning generalizable patterns. Signs of overfitting include high training accuracy but low validation/test accuracy. Techniques to prevent overfitting include regularization, cross-validation, early stopping, and using more training data.
+
+Q5. What is the purpose of a validation set in machine learning?
+Answer: A validation set is a subset of data used to evaluate and tune a machine learning model during the training process. It serves as an intermediate evaluation step between training and final testing. The validation set helps in hyperparameter tuning, model selection, and detecting overfitting early in the development process. Unlike the test set, which should only be used once for final evaluation, the validation set can be used multiple times to make decisions about model architecture and parameters. This three-way split (training, validation, test) ensures that the final test set remains completely independent and provides an unbiased estimate of model performance.
