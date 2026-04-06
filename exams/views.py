@@ -54,7 +54,8 @@ class ExamUploadView(views.APIView):
                 status='uploaded'
             )
             
-            logger.info(f\"Exam uploaded: {exam.id} - {exam.file_name} (Guest: {is_guest})\")\n            
+            logger.info(f"Exam uploaded: {exam.id} - {exam.file_name} (Guest: {is_guest})")
+            
             # Extract text from file
             try:
                 text_extractor = TextExtractor()
@@ -65,9 +66,10 @@ class ExamUploadView(views.APIView):
                 exam.processed_at = timezone.now()
                 exam.save()
                 
-                logger.info(f\"Text extracted successfully from exam {exam.id}\")\n                
+                logger.info(f"Text extracted successfully from exam {exam.id}")
             except Exception as e:
-                logger.error(f\"Error extracting text from exam {exam.id}: {str(e)}\")\n                exam.status = 'failed'
+                logger.error(f"Error extracting text from exam {exam.id}: {str(e)}")
+                exam.status = 'failed'
                 exam.error_message = str(e)
                 exam.save()
                 
@@ -82,17 +84,18 @@ class ExamUploadView(views.APIView):
             }, status=status.HTTP_201_CREATED)
             
         except Exception as e:
-            logger.error(f\"Error uploading exam: {str(e)}\")\n            return Response({
+            logger.error(f"Error uploading exam: {str(e)}")
+            return Response({
                 'error': 'File upload failed',
                 'detail': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ExamListView(generics.ListAPIView):
-    \"\"\"
+    """
     API endpoint to list user's exams
     GET /api/exams/
-    \"\"\"
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = ExamListSerializer
     
@@ -101,10 +104,10 @@ class ExamListView(generics.ListAPIView):
 
 
 class ExamDetailView(generics.RetrieveAPIView):
-    \"\"\"
+    """
     API endpoint to get exam details
     GET /api/exams/{id}/
-    \"\"\"
+    """
     permission_classes = [AllowAny]  # Allow guest access
     serializer_class = ExamSerializer
     
@@ -118,21 +121,23 @@ class ExamDetailView(generics.RetrieveAPIView):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_exam(request, exam_id):
-    \"\"\"
+    """
     API endpoint to delete an exam
     DELETE /api/exams/{id}/delete/
-    \"\"\"
+    """
     try:
         exam = get_object_or_404(Exam, id=exam_id, user=request.user)
         exam.delete()
         
-        logger.info(f\"Exam deleted: {exam_id} by user {request.user.email}\")\n        
+        logger.info(f"Exam deleted: {exam_id} by user {request.user.email}")
+        
         return Response({
             'message': 'Exam deleted successfully'
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f\"Error deleting exam {exam_id}: {str(e)}\")\n        return Response({
+        logger.error(f"Error deleting exam {exam_id}: {str(e)}")
+        return Response({
             'error': 'Failed to delete exam',
             'detail': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
