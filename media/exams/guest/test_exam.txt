@@ -1,0 +1,7 @@
+Question 1: What is photosynthesis?
+Student Answer: Plants use sunlight to make food
+Expected Answer: Photosynthesis is the process by which plants use sunlight, water, and CO2 to create glucose and oxygen through chemical reactions in chlorophyll.
+
+Question 2: Explain the water cycle.
+Student Answer: Water evaporates and forms clouds
+Expected Answer: The water cycle involves evaporation (water becomes vapor), condensation (vapor becomes clouds), precipitation (water falls), and collection (water returns to oceans/lakes).

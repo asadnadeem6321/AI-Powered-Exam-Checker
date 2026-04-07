@@ -72,12 +72,14 @@ const UploadPage = () => {
     try {
       const exam = await uploadExam(file);
       
-      // Redirect to evaluation form with exam data
-      navigate(`/upload`, {
+      // Redirect to question form page with exam data
+      navigate(`/question-form`, {
         state: { exam },
       });
     } catch (err) {
       console.error('Upload error:', err);
+      console.error('Error response:', err.response?.data);
+      console.error('Error status:', err.response?.status);
     }
   };
 

@@ -44,6 +44,9 @@ export const examService = {
 
   deleteExam: (examId) =>
     api.delete(`/exams/${examId}/delete/`),
+
+  extractQuestions: (examId) =>
+    api.post(`/exams/${examId}/extract-questions/`),
 };
 
 // Evaluation Services

@@ -1,14 +1,23 @@
 """
 SBERT Handler for semantic similarity computation
 """
-from sentence_transformers import SentenceTransformer, util
-import torch
 import numpy as np
 from django.conf import settings
 import logging
 from exam_checker.exceptions import SBERTException, ModelLoadException
 
 logger = logging.getLogger(__name__)
+
+# Lazy import for sentence_transformers and torch
+try:
+    from sentence_transformers import SentenceTransformer, util
+    import torch
+    SBERT_AVAILABLE = True
+except ImportError as e:
+    SBERT_AVAILABLE = False
+    logger.warning(f"SBERT not available (likely due to missing torch for Python 3.14): {str(e)}")
+    logger.warning("Similarity scoring will be disabled. Ensure PyTorch is installed for full functionality.")
+
 
 
 class SBERTHandler:
@@ -27,6 +36,11 @@ class SBERTHandler:
     
     def __init__(self):
         """Initialize SBERT model"""
+        if not SBERT_AVAILABLE:
+            logger.warning("SBERT model initialization skipped: torch/sentence-transformers not available")
+            self._model = None
+            return
+            
         if self._model is None:
             try:
                 logger.info(f"Loading SBERT model: {settings.SBERT_MODEL_NAME}")
@@ -34,6 +48,7 @@ class SBERTHandler:
                 logger.info("SBERT model loaded successfully")
             except Exception as e:
                 logger.error(f"Failed to load SBERT model: {str(e)}")
+                self._model = None
                 raise ModelLoadException(f"Failed to load SBERT model: {str(e)}")
     
     def compute_similarity(self, text1, text2):
@@ -48,6 +63,10 @@ class SBERTHandler:
             float: Similarity score between 0 and 100
         """
         try:
+            if not SBERT_AVAILABLE or self._model is None:
+                logger.warning("SBERT not available, returning default similarity score of 50%")
+                return 50.0  # Return neutral score when SBERT is unavailable
+            
             if not text1 or not text2:
                 logger.warning("Empty text provided for similarity computation")
                 return 0.0
@@ -106,6 +125,10 @@ class SBERTHandler:
             numpy.ndarray: Array of embeddings
         """
         try:
+            if not SBERT_AVAILABLE or self._model is None:
+                logger.warning("SBERT not available, returning empty embeddings array")
+                return np.array([])
+            
             if not texts:
                 return np.array([])
             

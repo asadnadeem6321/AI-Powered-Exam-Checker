@@ -31,7 +31,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-@ube5u3#2chl(u1rg2zc^21hnn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Parse ALLOWED_HOSTS properly
+allowed_hosts_str = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',') if host.strip()]
+if os.getenv('DEBUG', 'False') == 'True':
+    ALLOWED_HOSTS.append('*')  # Allow any host in development
 
 
 # Application definition
@@ -180,8 +184,30 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost",
+    "http://127.0.0.1",
 ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_EXPOSE_HEADERS = [
+    'access-control-allow-credentials',
+    'access-control-allow-headers',
+    'access-control-allow-origin',
+    'access-control-max-age',
+    'content-length',
+    'content-type',
+]
+CORS_PREFLIGHT_MAX_AGE = 86400
 
 # File Upload Settings
 MAX_UPLOAD_SIZE = int(os.getenv('MAX_UPLOAD_SIZE', 10485760))  # 10MB default
@@ -201,7 +227,7 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 
 # Claude API Configuration
 CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '')
-CLAUDE_MODEL = os.getenv('CLAUDE_MODEL', 'claude-3-5-sonnet-20241022')
+CLAUDE_MODEL = os.getenv('CLAUDE_MODEL', 'claude-opus-4-1-20250805')
 CLAUDE_MAX_TOKENS = int(os.getenv('CLAUDE_MAX_TOKENS', 1000))
 CLAUDE_TEMPERATURE = float(os.getenv('CLAUDE_TEMPERATURE', 0.3))
 
@@ -213,7 +239,7 @@ SIMILARITY_WEIGHT = float(os.getenv('SIMILARITY_WEIGHT', 0.6))
 CONTEXT_WEIGHT = float(os.getenv('CONTEXT_WEIGHT', 0.4))
 
 # OCR Configuration
-TESSERACT_CMD = os.getenv('TESSERACT_CMD', r'C:\Program Files\Tesseract-OCR\tesseract.exe')
+TESSERACT_CMD = os.getenv('TESSERACT_CMD', '/usr/local/bin/tesseract')  # macOS default
 
 # Logging Configuration
 LOGGING = {

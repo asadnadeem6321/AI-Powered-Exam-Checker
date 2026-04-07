@@ -6,7 +6,8 @@ from .views import (
     ExamUploadView,
     ExamListView,
     ExamDetailView,
-    delete_exam
+    delete_exam,
+    extract_questions
 )
 
 app_name = 'exams'
@@ -16,4 +17,5 @@ urlpatterns = [
     path('', ExamListView.as_view(), name='list'),
     path('<int:pk>/', ExamDetailView.as_view(), name='detail'),
     path('<int:exam_id>/delete/', delete_exam, name='delete'),
+    path('<int:exam_id>/extract-questions/', extract_questions, name='extract_questions'),
 ]

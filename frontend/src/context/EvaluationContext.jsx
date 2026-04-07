@@ -28,7 +28,23 @@ export const EvaluationProvider = ({ children }) => {
       setCurrentExam(exam);
       return exam;
     } catch (err) {
-      const errorMessage = err.response?.data?.detail || 'Upload failed';
+      console.error('Upload error details:', {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message,
+        isAxiosError: err.isAxiosError,
+      });
+      
+      let errorMessage = 'Upload failed';
+      
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
       throw err;
     } finally {

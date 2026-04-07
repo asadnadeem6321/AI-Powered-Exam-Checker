@@ -15,9 +15,9 @@ from .serializers import (
     ExamUploadSerializer,
     QuestionAnswerSerializer
 )
-from exam_checker.ai_engine import TextExtractor
+from exam_checker.ai_engine import TextExtractor, QuestionExtractor
 from exam_checker.ai_engine.preprocessor import TextPreprocessor
-from exam_checker.exceptions import TextExtractionException, FileUploadException
+from exam_checker.exceptions import TextExtractionException, FileUploadException, GPTException
 import logging
 import os
 
@@ -139,5 +139,71 @@ def delete_exam(request, exam_id):
         logger.error(f"Error deleting exam {exam_id}: {str(e)}")
         return Response({
             'error': 'Failed to delete exam',
+            'detail': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def extract_questions(request, exam_id):
+    """
+    API endpoint to extract questions from exam text
+    POST /api/exams/{exam_id}/extract-questions/
+    
+    This endpoint:
+    1. Gets the exam's raw text
+    2. Uses Claude AI to extract questions and answers
+    3. Returns structured question data for user review
+    """
+    try:
+        # Get exam
+        if request.user.is_authenticated:
+            exam = get_object_or_404(Exam, id=exam_id, user=request.user)
+        else:
+            exam = get_object_or_404(Exam, id=exam_id, is_guest=True)
+        
+        # Check if exam has raw text
+        if not exam.raw_text:
+            return Response({
+                'error': 'Exam text not extracted yet',
+                'detail': 'Please ensure the file was successfully processed'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info(f"Extracting questions from exam {exam_id}")
+        
+        # Initialize question extractor
+        extractor = QuestionExtractor()
+        
+        # Extract questions using Claude API
+        questions_data = extractor.extract_questions(exam.raw_text)
+        
+        # Validate extracted questions
+        is_valid, error_msg = extractor.validate_questions(questions_data)
+        if not is_valid:
+            logger.error(f"Question validation failed: {error_msg}")
+            return Response({
+                'error': 'Failed to extract questions',
+                'detail': error_msg
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info(f"Successfully extracted {questions_data.get('total_questions', 0)} questions")
+        
+        return Response({
+            'message': 'Questions extracted successfully',
+            'exam_id': exam_id,
+            'data': questions_data
+        }, status=status.HTTP_200_OK)
+        
+    except GPTException as e:
+        logger.error(f"Claude API error: {str(e)}")
+        return Response({
+            'error': 'Failed to extract questions using AI',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    except Exception as e:
+        logger.error(f"Error extracting questions from exam {exam_id}: {str(e)}")
+        return Response({
+            'error': 'Failed to extract questions',
             'detail': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
