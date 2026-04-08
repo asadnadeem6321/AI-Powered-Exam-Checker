@@ -1,0 +1,157 @@
+import React, { useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { evaluationService } from '../services/examService';
+
+const makeRow = (id) => ({
+  id,
+  question_text: '',
+  student_answer: '',
+  model_answer: '',
+});
+
+const ManualEntryPage = () => {
+  const location = useLocation();
+  const [rows, setRows] = useState([makeRow(1)]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null);
+
+  const examId = useMemo(() => location.state?.examId || null, [location.state]);
+
+  const addRow = () => {
+    const nextId = rows.length ? Math.max(...rows.map((r) => r.id)) + 1 : 1;
+    setRows((prev) => [...prev, makeRow(nextId)]);
+  };
+
+  const removeRow = (id) => {
+    setRows((prev) => (prev.length > 1 ? prev.filter((r) => r.id !== id) : prev));
+  };
+
+  const updateRow = (id, key, value) => {
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [key]: value } : r)));
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setResult(null);
+
+    const cleaned = rows.map((r) => ({
+      question_text: r.question_text.trim(),
+      student_answer: r.student_answer.trim(),
+      model_answer: r.model_answer.trim(),
+    }));
+
+    const hasInvalid = cleaned.some(
+      (r) => !r.question_text || !r.student_answer || !r.model_answer
+    );
+    if (hasInvalid) {
+      setError('Please fill all fields for every question.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await evaluationService.evaluateManual(cleaned);
+      setResult(response.data.evaluation);
+    } catch (err) {
+      setError(
+        err?.response?.data?.detail ||
+          err?.response?.data?.error ||
+          err?.message ||
+          'Manual evaluation failed'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="upload-container">
+      <div className="upload-card" style={{ maxWidth: '960px' }}>
+        <h1>Manual Question Entry</h1>
+        <p className="upload-subtitle">
+          Add question, student answer, and expected answer manually. This bypasses text extraction.
+        </p>
+        {examId && <p style={{ marginBottom: '1rem' }}>Exam ID: {examId}</p>}
+
+        {error && <div className="error-message">{error}</div>}
+
+        <form onSubmit={onSubmit}>
+          {rows.map((row, index) => (
+            <div key={row.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <strong>Question {index + 1}</strong>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-small"
+                  onClick={() => removeRow(row.id)}
+                  disabled={rows.length === 1}
+                >
+                  Remove
+                </button>
+              </div>
+
+              <div className="form-group">
+                <label>Question</label>
+                <textarea
+                  className="form-control"
+                  rows="2"
+                  value={row.question_text}
+                  onChange={(e) => updateRow(row.id, 'question_text', e.target.value)}
+                  placeholder="Enter question statement"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Student Answer</label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={row.student_answer}
+                  onChange={(e) => updateRow(row.id, 'student_answer', e.target.value)}
+                  placeholder="Enter student's answer"
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Expected Answer</label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={row.model_answer}
+                  onChange={(e) => updateRow(row.id, 'model_answer', e.target.value)}
+                  placeholder="Enter expected/model answer"
+                />
+              </div>
+            </div>
+          ))}
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <button type="button" className="btn btn-secondary" onClick={addRow}>
+              Add New Question + Answer
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Evaluating...' : 'Evaluate Manual Entries'}
+            </button>
+          </div>
+        </form>
+
+        {result && (
+          <div style={{ marginTop: 20, borderTop: '1px solid #ddd', paddingTop: 16 }}>
+            <h2>Evaluation Summary</h2>
+            <p><strong>Average Score:</strong> {result.average_score}</p>
+            <p><strong>Grade:</strong> {result.grade}</p>
+            <p><strong>Percentage:</strong> {result.percentage}%</p>
+            <p><strong>Overall Feedback:</strong></p>
+            <pre style={{ whiteSpace: 'pre-wrap', background: '#f6f8fa', padding: 10, borderRadius: 6 }}>
+              {result.overall_feedback}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ManualEntryPage;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEvaluation } from '../context/EvaluationContext';
+import { examService } from '../services/examService';
 import '../styles/Upload.css';
 
 const QuestionFormPage = () => {
@@ -13,6 +14,7 @@ const QuestionFormPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setLocalError] = useState('');
   const [extracting, setExtracting] = useState(true);
+  const [allowManualFallback, setAllowManualFallback] = useState(false);
 
   // Extract questions from the uploaded exam
   useEffect(() => {
@@ -28,34 +30,27 @@ const QuestionFormPage = () => {
         setExam(examData);
         setExtracting(true);
 
-        // Call backend to extract questions
-        const response = await fetch(
-          `http://localhost:8000/api/exams/${examData.id}/extract-questions/`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || 'Failed to extract questions');
-        }
-
-        const data = await response.json();
+        // Call backend to extract questions using centralized API service.
+        // This avoids sending malformed Authorization headers for guests.
+        const response = await examService.extractQuestions(examData.id);
+        const data = response.data;
         console.log('Extracted questions:', data);
 
         if (data.data && data.data.questions) {
           setQuestions(data.data.questions);
         } else {
           setLocalError('No questions found in the document');
+          setAllowManualFallback(true);
         }
       } catch (err) {
         console.error('Question extraction error:', err);
-        setLocalError(err.message || 'Failed to extract questions from the exam');
+        const message =
+          err?.response?.data?.detail ||
+          err?.response?.data?.error ||
+          err?.message ||
+          'Failed to extract questions from the exam';
+        setLocalError(message);
+        setAllowManualFallback(true);
       } finally {
         setExtracting(false);
         setLoading(false);
@@ -153,6 +148,15 @@ const QuestionFormPage = () => {
           >
             Back to Upload
           </button>
+          {allowManualFallback && (
+            <button
+              className="btn btn-secondary"
+              style={{ marginLeft: '0.75rem' }}
+              onClick={() => navigate('/manual-entry', { state: { examId: exam?.id || null } })}
+            >
+              Enter Questions Manually
+            </button>
+          )}
         </div>
       </div>
     );

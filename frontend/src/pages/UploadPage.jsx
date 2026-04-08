@@ -11,6 +11,7 @@ const UploadPage = () => {
   const [localError, setLocalError] = useState('');
 
   const ALLOWED_TYPES = ['application/pdf', 'text/plain', 'image/jpeg', 'image/png'];
+  const ALLOWED_EXTENSIONS = ['pdf', 'txt', 'jpg', 'jpeg', 'png'];
   const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
   const validateFile = (selectedFile) => {
@@ -19,7 +20,15 @@ const UploadPage = () => {
       return false;
     }
 
-    if (!ALLOWED_TYPES.includes(selectedFile.type)) {
+    const fileName = selectedFile.name || '';
+    const extension = fileName.includes('.')
+      ? fileName.split('.').pop().toLowerCase()
+      : '';
+
+    const validByMime = ALLOWED_TYPES.includes(selectedFile.type);
+    const validByExtension = ALLOWED_EXTENSIONS.includes(extension);
+
+    if (!validByMime && !validByExtension) {
       setLocalError('File type not allowed. Please upload PDF, TXT, JPG, or PNG');
       return false;
     }

@@ -32,6 +32,9 @@ const Navbar = () => {
               <Link to="/upload" className="nav-link">
                 Upload Exam
               </Link>
+              <Link to="/manual-entry" className="nav-link">
+                Manual Test
+              </Link>
               <span className="nav-user">
                 Welcome, {user?.name || user?.email}
               </span>
@@ -49,6 +52,9 @@ const Navbar = () => {
               </Link>
               <Link to="/register" className="nav-link btn-register">
                 Register
+              </Link>
+              <Link to="/manual-entry" className="nav-link">
+                Manual Test
               </Link>
             </>
           )}

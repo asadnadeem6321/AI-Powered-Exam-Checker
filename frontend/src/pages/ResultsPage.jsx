@@ -26,7 +26,7 @@ const ResultsPage = () => {
     );
   }
 
-  const { exam, final_score, grade, overall_feedback, question_evaluations } = currentEvaluation;
+  const { exam, final_score, grade, overall_feedback, question_evaluations, evaluation_metadata } = currentEvaluation;
 
   return (
     <div className="results-container">
@@ -43,6 +43,10 @@ const ResultsPage = () => {
         <div className="score-info">
           <h2 className={`grade-${grade}`}>{grade}</h2>
           <p className="score-text">Overall Performance</p>
+          <p className="score-formula">Final Score = 0.6 x Similarity + 0.4 x Context</p>
+          {evaluation_metadata?.percentage !== undefined && (
+            <p className="score-meta">Percentage: {evaluation_metadata.percentage}%</p>
+          )}
         </div>
       </div>
 

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exam Checker AJAX Client</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #0ea5e9;
+      --danger: #dc2626;
+      --border: #cbd5e1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--text);
+      background: radial-gradient(circle at top right, #dbeafe, var(--bg));
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 8px; }
+    .sub { color: var(--muted); margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+    }
+    label { display: block; font-weight: 600; margin-bottom: 6px; }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font: inherit;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: 0;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row button { width: auto; }
+    .btn-secondary { background: #334155; }
+    .error {
+      margin-top: 10px;
+      color: var(--danger);
+      font-weight: 700;
+    }
+    .muted { color: var(--muted); }
+    .q-block { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    pre { white-space: pre-wrap; background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 8px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Exam Checker AJAX Client</h1>
+    <p class="sub">No React required. Use upload flow or manual dynamic question fields.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>1) Upload and Extract</h2>
+        <p class="muted">Upload PDF/TXT/JPG/PNG and extract questions.</p>
+        <label for="exam-file">Exam File</label>
+        <input id="exam-file" type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" />
+        <div style="height:10px"></div>
+        <button id="upload-btn">Upload and Extract Questions</button>
+        <div id="upload-error" class="error"></div>
+        <pre id="upload-output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>2) Manual Evaluate</h2>
+        <p class="muted">If extraction fails, enter Q/A manually and evaluate.</p>
+        <div id="qa-list"></div>
+        <div class="btn-row">
+          <button id="add-row" type="button" class="btn-secondary">Add New Question + Answer</button>
+          <button id="manual-eval" type="button">Evaluate Manual Entries</button>
+        </div>
+        <div id="manual-error" class="error"></div>
+        <pre id="manual-output"></pre>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+
+    const qaList = document.getElementById('qa-list');
+    const addRowBtn = document.getElementById('add-row');
+    const manualBtn = document.getElementById('manual-eval');
+
+    function makeQaRow(index) {
+      const wrap = document.createElement('div');
+      wrap.className = 'q-block';
+      wrap.innerHTML = `
+        <strong>Question ${index}</strong>
+        <label>Question</label>
+        <textarea data-key="question_text" placeholder="Enter question statement"></textarea>
+        <label>Student Answer</label>
+        <textarea data-key="student_answer" placeholder="Enter student answer"></textarea>
+        <label>Expected Answer</label>
+        <textarea data-key="model_answer" placeholder="Enter expected/model answer"></textarea>
+      `;
+      return wrap;
+    }
+
+    function refreshLabels() {
+      [...qaList.children].forEach((row, idx) => {
+        const heading = row.querySelector('strong');
+        heading.textContent = `Question ${idx + 1}`;
+      });
+    }
+
+    function addQaRow() {
+      qaList.appendChild(makeQaRow(qaList.children.length + 1));
+    }
+
+    addQaRow();
+
+    addRowBtn.addEventListener('click', addQaRow);
+
+    manualBtn.addEventListener('click', async () => {
+      const errorEl = document.getElementById('manual-error');
+      const outputEl = document.getElementById('manual-output');
+      errorEl.textContent = '';
+      outputEl.textContent = '';
+
+      const questions = [...qaList.children].map((row) => {
+        const get = (k) => row.querySelector(`[data-key="${k}"]`).value.trim();
+        return {
+          question_text: get('question_text'),
+          student_answer: get('student_answer'),
+          model_answer: get('model_answer'),
+        };
+      });
+
+      const invalid = questions.some((q) => !q.question_text || !q.student_answer || !q.model_answer);
+      if (invalid) {
+        errorEl.textContent = 'Please fill all fields for all questions.';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/evaluations/manual/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questions }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || data.error || 'Manual evaluation failed');
+        outputEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    });
+
+    document.getElementById('upload-btn').addEventListener('click', async () => {
+      const errorEl = document.getElementById('upload-error');
+      const outputEl = document.getElementById('upload-output');
+      errorEl.textContent = '';
+      outputEl.textContent = '';
+
+      const fileInput = document.getElementById('exam-file');
+      const file = fileInput.files[0];
+      if (!file) {
+        errorEl.textContent = 'Please choose a file first.';
+        return;
+      }
+
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+
+        const uploadRes = await fetch(`${API_BASE}/exams/upload/`, {
+          method: 'POST',
+          body: fd,
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.detail || uploadData.error || 'Upload failed');
+
+        const examId = uploadData.exam.id;
+        const extractRes = await fetch(`${API_BASE}/exams/${examId}/extract-questions/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const extractData = await extractRes.json();
+        if (!extractRes.ok) throw new Error(extractData.detail || extractData.error || 'Extraction failed');
+
+        outputEl.textContent = JSON.stringify({ upload: uploadData, extraction: extractData }, null, 2);
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

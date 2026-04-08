@@ -65,6 +65,18 @@
   opacity: 0.9;
 }
 
+.score-formula {
+  font-size: 14px;
+  opacity: 0.92;
+  margin-top: 6px;
+}
+
+.score-meta {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
 .feedback-section {
   background: white;
   padding: 32px;

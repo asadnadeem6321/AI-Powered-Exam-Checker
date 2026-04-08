@@ -59,7 +59,7 @@ Return JSON with this exact structure:
             "question_type": "<essay|multiple_choice|short_answer|fill_blank>",
             "options": ["A) ...", "B) ...", "C) ...", "D) ..."] or null if not multiple choice,
             "student_answer": "<student answer if visible, or null>",
-            "model_answer": null,
+            "model_answer": "<best possible correct answer for this question; concise but complete>",
             "marks": <marks if specified, or null>
         },
         ...
@@ -117,7 +117,7 @@ Return the extracted questions in the specified JSON format."""
                     q.setdefault('question_type', 'essay')
                     q.setdefault('options', None)
                     q.setdefault('student_answer', None)
-                    q.setdefault('model_answer', None)
+                    q.setdefault('model_answer', '')
                     q.setdefault('marks', None)
                 
                 logger.info(f"Successfully extracted {result['total_questions']} questions from exam")

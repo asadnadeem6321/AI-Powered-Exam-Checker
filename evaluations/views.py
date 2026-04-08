@@ -151,6 +151,66 @@ def evaluate_exam(request, exam_id):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def evaluate_manual(request):
+    """
+    API endpoint to evaluate manually entered question-answer pairs.
+    POST /api/evaluations/manual/
+
+    Request body:
+    {
+        "questions": [
+            {
+                "question_text": "...",
+                "student_answer": "...",
+                "model_answer": "..."
+            }
+        ]
+    }
+    """
+    try:
+        questions_data = request.data.get('questions', [])
+
+        if not isinstance(questions_data, list) or len(questions_data) == 0:
+            return Response({
+                'error': 'No questions provided for evaluation'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        qa_pairs = []
+        for idx, q_data in enumerate(questions_data, start=1):
+            question_text = (q_data.get('question_text') or '').strip()
+            student_answer = (q_data.get('student_answer') or '').strip()
+            model_answer = (q_data.get('model_answer') or '').strip()
+
+            if not question_text or not student_answer or not model_answer:
+                return Response({
+                    'error': f'Question {idx} is incomplete. Question, student answer, and model answer are required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            qa_pairs.append({
+                'question_number': idx,
+                'question_text': question_text,
+                'student_answer': student_answer,
+                'model_answer': model_answer
+            })
+
+        evaluator = HybridEvaluator()
+        evaluation_result = evaluator.evaluate_multiple_answers(qa_pairs)
+
+        return Response({
+            'message': 'Manual evaluation completed successfully',
+            'evaluation': evaluation_result
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error in manual evaluation: {str(e)}")
+        return Response({
+            'error': 'Manual evaluation failed',
+            'detail': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
 class EvaluationListView(generics.ListAPIView):
     """
     API endpoint to list user's evaluations

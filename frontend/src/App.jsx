@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import UploadPage from './pages/UploadPage';
 import QuestionFormPage from './pages/QuestionFormPage';
+import ManualEntryPage from './pages/ManualEntryPage';
 import ResultsPage from './pages/ResultsPage';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -26,16 +27,14 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/question-form" element={<QuestionFormPage />} />
+              <Route path="/manual-entry" element={<ManualEntryPage />} />
               
               {/* Protected Routes */}
               <Route 
                 path="/dashboard" 
                 element={<PrivateRoute component={DashboardPage} />} 
               />
-              <Route 
-                path="/results/:evaluationId" 
-                element={<PrivateRoute component={ResultsPage} />} 
-              />
+              <Route path="/results/:evaluationId" element={<ResultsPage />} />
               
               {/* Catch all */}
               <Route path="*" element={<Navigate to="/login" />} />

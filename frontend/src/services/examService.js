@@ -54,6 +54,9 @@ export const evaluationService = {
   evaluateExam: (examId, questions) =>
     api.post(`/evaluations/evaluate/${examId}/`, { questions }),
 
+  evaluateManual: (questions) =>
+    api.post('/evaluations/manual/', { questions }),
+
   getEvaluations: () =>
     api.get('/evaluations/'),
 
