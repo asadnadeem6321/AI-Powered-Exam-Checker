@@ -4,6 +4,7 @@ SBERT Handler for semantic similarity computation
 import numpy as np
 from django.conf import settings
 import logging
+import re
 from exam_checker.exceptions import SBERTException, ModelLoadException
 
 logger = logging.getLogger(__name__)
@@ -64,8 +65,8 @@ class SBERTHandler:
         """
         try:
             if not SBERT_AVAILABLE or self._model is None:
-                logger.warning("SBERT not available, returning default similarity score of 50%")
-                return 50.0  # Return neutral score when SBERT is unavailable
+                logger.warning("SBERT not available, using lexical fallback similarity")
+                return self._lexical_similarity(text1, text2)
             
             if not text1 or not text2:
                 logger.warning("Empty text provided for similarity computation")
@@ -91,6 +92,41 @@ class SBERTHandler:
         except Exception as e:
             logger.error(f"Error computing similarity: {str(e)}")
             raise SBERTException(f"Error computing similarity: {str(e)}")
+
+    def _lexical_similarity(self, text1, text2):
+        """Fallback similarity based on token overlap when SBERT is unavailable."""
+        try:
+            def normalize(text):
+                text = (text or '').lower()
+                text = re.sub(r'[^a-z0-9\s]', ' ', text)
+                tokens = [t for t in text.split() if len(t) > 2]
+                stopwords = {
+                    'the', 'and', 'for', 'with', 'that', 'this', 'are', 'was', 'were',
+                    'what', 'does', 'do', 'did', 'from', 'into', 'your', 'you', 'has',
+                    'have', 'had', 'can', 'will', 'would', 'could', 'should', 'about',
+                    'they', 'them', 'then', 'than', 'there', 'their', 'here', 'when',
+                    'where', 'which', 'who', 'whom', 'why', 'how'
+                }
+                return {t for t in tokens if t not in stopwords}
+
+            tokens1 = normalize(text1)
+            tokens2 = normalize(text2)
+
+            if not tokens1 or not tokens2:
+                return 0.0
+
+            intersection = len(tokens1 & tokens2)
+            union = len(tokens1 | tokens2)
+            if union == 0:
+                return 0.0
+
+            similarity_score = (intersection / union) * 100
+            similarity_score = max(0.0, min(100.0, similarity_score))
+            logger.info(f"Lexical fallback similarity score: {similarity_score:.2f}")
+            return similarity_score
+        except Exception as e:
+            logger.error(f"Error computing lexical fallback similarity: {str(e)}")
+            return 0.0
     
     def batch_compute_similarity(self, text_pairs):
         """

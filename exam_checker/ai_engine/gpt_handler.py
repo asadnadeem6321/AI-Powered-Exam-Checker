@@ -133,6 +133,57 @@ Please evaluate the student answer based on the model answer and provide your as
                 time.sleep(2 ** attempt)  # Exponential backoff
         
         raise GPTException("Failed to get evaluation from Claude after all retries")
+
+    def generate_expected_answer(self, question_text, max_retries=3):
+        """Generate a concise expected/model answer from a question text."""
+        system_prompt = """You are an academic assistant that writes concise model answers.
+Return only valid JSON with this structure:
+{
+    "model_answer": "<clear, concise expected answer>",
+    "key_points": ["<point 1>", "<point 2>"]
+}
+Rules:
+1. Answer only from the question text.
+2. Be concise and academically correct.
+3. Do not add markdown or explanations outside JSON.
+"""
+
+        user_prompt = f"""Question:
+{question_text}
+
+Generate the expected answer in JSON format only."""
+
+        for attempt in range(max_retries):
+            try:
+                response = self.client.messages.create(
+                    model=self.model,
+                    max_tokens=self.max_tokens,
+                    temperature=0.2,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": user_prompt}]
+                )
+
+                result_text = response.content[0].text.strip()
+                if result_text.startswith("```json"):
+                    result_text = result_text.replace("```json", "").replace("```", "").strip()
+                elif result_text.startswith("```"):
+                    result_text = result_text.replace("```", "").strip()
+
+                result = json.loads(result_text)
+                model_answer = (result.get('model_answer') or '').strip()
+                if not model_answer:
+                    raise ValueError('Missing model_answer in Claude response')
+
+                result.setdefault('key_points', [])
+                result['model_answer'] = model_answer
+                return result
+
+            except Exception as e:
+                logger.error(f"Error generating expected answer: {str(e)}")
+                if attempt == max_retries - 1:
+                    raise GPTException(f"Failed to generate expected answer: {str(e)}")
+
+        raise GPTException("Failed to generate expected answer after all retries")
     
     def batch_evaluate(self, qa_pairs, max_retries=3):
         """

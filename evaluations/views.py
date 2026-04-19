@@ -15,6 +15,8 @@ from .serializers import (
     QuestionEvaluationSerializer
 )
 from exam_checker.ai_engine import HybridEvaluator
+from exam_checker.ai_engine.enhanced_evaluator import EnhancedHybridEvaluator
+from exam_checker.ai_engine.gpt_handler import GPTHandler
 from exam_checker.ai_engine.preprocessor import TextPreprocessor
 from exam_checker.exceptions import EvaluationException
 import logging
@@ -164,7 +166,7 @@ def evaluate_manual(request):
             {
                 "question_text": "...",
                 "student_answer": "...",
-                "model_answer": "..."
+                "total_marks": 10
             }
         ]
     }
@@ -178,25 +180,39 @@ def evaluate_manual(request):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         qa_pairs = []
+        gpt = GPTHandler()
+        evaluator = EnhancedHybridEvaluator()
         for idx, q_data in enumerate(questions_data, start=1):
             question_text = (q_data.get('question_text') or '').strip()
             student_answer = (q_data.get('student_answer') or '').strip()
-            model_answer = (q_data.get('model_answer') or '').strip()
+            total_marks = q_data.get('total_marks')
 
-            if not question_text or not student_answer or not model_answer:
+            if not question_text or not student_answer:
                 return Response({
-                    'error': f'Question {idx} is incomplete. Question, student answer, and model answer are required.'
+                    'error': f'Question {idx} is incomplete. Question and student answer are required.'
                 }, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                total_marks = int(total_marks)
+                if total_marks <= 0:
+                    raise ValueError()
+            except Exception:
+                return Response({
+                    'error': f'Question {idx} has invalid total marks. A positive integer is required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            expected = gpt.generate_expected_answer(question_text)
+            model_answer = expected.get('model_answer', '')
 
             qa_pairs.append({
                 'question_number': idx,
                 'question_text': question_text,
                 'student_answer': student_answer,
-                'model_answer': model_answer
+                'model_answer': model_answer,
+                'marks': total_marks,
             })
 
-        evaluator = HybridEvaluator()
-        evaluation_result = evaluator.evaluate_multiple_answers(qa_pairs)
+        evaluation_result = evaluator.evaluate_multiple_with_marks(qa_pairs, total_marks=sum(q['marks'] for q in qa_pairs))
 
         return Response({
             'message': 'Manual evaluation completed successfully',
