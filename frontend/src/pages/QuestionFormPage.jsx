@@ -11,63 +11,74 @@ const QuestionFormPage = () => {
 
   const [exam, setExam] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [totalMarks, setTotalMarks] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setLocalError] = useState('');
-  const [extracting, setExtracting] = useState(true);
+  const [extracting, setExtracting] = useState(false);
   const [allowManualFallback, setAllowManualFallback] = useState(false);
 
-  // Extract questions from the uploaded exam
   useEffect(() => {
-    const extractQuestionsFromExam = async () => {
-      try {
-        const examData = location.state?.exam;
-        if (!examData) {
-          setLocalError('No exam data found');
-          setLoading(false);
-          return;
-        }
+    const examData = location.state?.exam;
 
-        setExam(examData);
-        setExtracting(true);
+    if (!examData) {
+      setLocalError('No exam data found');
+      setLoading(false);
+      return;
+    }
 
-        // Call backend to extract questions using centralized API service.
-        // This avoids sending malformed Authorization headers for guests.
-        const response = await examService.extractQuestions(examData.id);
-        const data = response.data;
-        console.log('Extracted questions:', data);
-
-        if (data.data && data.data.questions) {
-          setQuestions(data.data.questions);
-        } else {
-          setLocalError('No questions found in the document');
-          setAllowManualFallback(true);
-        }
-      } catch (err) {
-        console.error('Question extraction error:', err);
-        const message =
-          err?.response?.data?.detail ||
-          err?.response?.data?.error ||
-          err?.message ||
-          'Failed to extract questions from the exam';
-        setLocalError(message);
-        setAllowManualFallback(true);
-      } finally {
-        setExtracting(false);
-        setLoading(false);
-      }
-    };
-
-    extractQuestionsFromExam();
+    setExam(examData);
+    if (examData.total_marks) {
+      setTotalMarks(String(examData.total_marks));
+    }
+    setLoading(false);
   }, [location.state]);
 
-  // Update a question field
   const updateQuestion = (index, field, value) => {
     const updatedQuestions = [...questions];
     updatedQuestions[index][field] = value;
     setQuestions(updatedQuestions);
   };
 
-  // Handle submit to evaluate
+  const handleExtractQuestions = async () => {
+    if (!exam) {
+      setLocalError('No exam data available');
+      return;
+    }
+
+    const parsedMarks = Number(totalMarks);
+    if (!Number.isInteger(parsedMarks) || parsedMarks <= 0) {
+      setLocalError('Please enter a valid positive integer for total marks');
+      return;
+    }
+
+    try {
+      setExtracting(true);
+      setLocalError('');
+      setAllowManualFallback(false);
+
+      const response = await examService.extractQuestions(exam.id, parsedMarks);
+      const data = response.data;
+
+      if (data.data && Array.isArray(data.data.questions) && data.data.questions.length > 0) {
+        setQuestions(data.data.questions);
+      } else {
+        setLocalError('No questions found in the document');
+        setAllowManualFallback(true);
+      }
+    } catch (err) {
+      const message =
+        err?.response?.data?.detail ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Failed to extract questions from the exam';
+
+      setLocalError(message);
+      setAllowManualFallback(true);
+    } finally {
+      setExtracting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -76,7 +87,11 @@ const QuestionFormPage = () => {
       return;
     }
 
-    // Validate all questions have answers
+    if (questions.length === 0) {
+      setLocalError('Please extract questions first');
+      return;
+    }
+
     const allValid = questions.every(
       (q) => q.student_answer && q.student_answer.trim() && q.model_answer && q.model_answer.trim()
     );
@@ -90,24 +105,27 @@ const QuestionFormPage = () => {
       setExtracting(true);
       setLocalError('');
 
-      // Prepare questions data for evaluation
-      const questionsForEvaluation = questions.map((q) => ({
-        question_number: q.question_number,
+      const questionsForEvaluation = questions.map((q, index) => ({
+        question_number: q.question_number || index + 1,
         question_text: q.question_text,
         student_answer: q.student_answer,
         model_answer: q.model_answer,
+        marks: q.marks,
       }));
 
-      // Call evaluation endpoint
       const evaluation = await evaluateExam(exam.id, questionsForEvaluation);
+      const resultId = evaluation.evaluation_id || evaluation.id || exam.id;
 
-      // Navigate to results page
-      navigate(`/results/${evaluation.id}`, {
+      navigate(`/results/${resultId}`, {
         state: { evaluation, exam },
       });
     } catch (err) {
-      console.error('Evaluation error:', err);
-      setLocalError(err.message || 'Failed to evaluate exam');
+      const message =
+        err?.response?.data?.detail ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Failed to evaluate exam';
+      setLocalError(message);
     } finally {
       setExtracting(false);
     }
@@ -124,28 +142,13 @@ const QuestionFormPage = () => {
     );
   }
 
-  if (extracting) {
-    return (
-      <div className="upload-container">
-        <div className="upload-card">
-          <h1>Extracting Questions...</h1>
-          <p>AI is analyzing your exam document and extracting questions.</p>
-          <p>This may take a moment...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (error || ctxError) {
     return (
       <div className="upload-container">
         <div className="upload-card">
           <h1>Error</h1>
           <div className="error-message">{error || ctxError}</div>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate('/upload')}
-          >
+          <button className="btn btn-primary" onClick={() => navigate('/upload')}>
             Back to Upload
           </button>
           {allowManualFallback && (
@@ -165,18 +168,37 @@ const QuestionFormPage = () => {
   return (
     <div className="upload-container">
       <div className="upload-card">
-        <h1>Review & Complete Exam Questions</h1>
+        <h1>Review And Complete Exam Questions</h1>
         <p className="upload-subtitle">
-          Verify the extracted questions and add expected answers, then click Evaluate
+          Enter total marks, extract questions, then evaluate with marks-aware scoring
         </p>
 
-        {(error || ctxError) && (
-          <div className="error-message">{error || ctxError}</div>
-        )}
+        {(error || ctxError) && <div className="error-message">{error || ctxError}</div>}
 
         {questions.length === 0 ? (
-          <div className="error-message">
-            No questions could be extracted from the document. Please try uploading a different file.
+          <div className="marks-setup-card">
+            <div className="form-group">
+              <label htmlFor="total-marks">Total Exam Marks *</label>
+              <input
+                id="total-marks"
+                type="number"
+                min="1"
+                value={totalMarks}
+                onChange={(e) => setTotalMarks(e.target.value)}
+                className="form-control"
+                placeholder="e.g. 100"
+              />
+              <small>This is required to allocate marks across extracted questions.</small>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-primary btn-large"
+              onClick={handleExtractQuestions}
+              disabled={extracting}
+            >
+              {extracting ? 'Extracting Questions...' : 'Extract Questions'}
+            </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -185,24 +207,23 @@ const QuestionFormPage = () => {
                 <div key={idx} className="question-item">
                   <div className="question-header">
                     <h3>Question {question.question_number || idx + 1}</h3>
-                    <span className="question-type">{question.question_type || 'essay'}</span>
+                    <div className="question-meta">
+                      <span className="question-type">{question.question_type || 'essay'}</span>
+                      <span className="question-marks">{question.marks ?? 0} marks</span>
+                    </div>
                   </div>
 
-                  {/* Question Text */}
                   <div className="form-group">
                     <label>Question Text</label>
                     <textarea
                       value={question.question_text || ''}
-                      onChange={(e) =>
-                        updateQuestion(idx, 'question_text', e.target.value)
-                      }
+                      onChange={(e) => updateQuestion(idx, 'question_text', e.target.value)}
                       placeholder="Question text"
                       rows="3"
                       className="form-control"
                     />
                   </div>
 
-                  {/* Options for MCQ */}
                   {question.question_type === 'multiple_choice' && question.options && (
                     <div className="form-group">
                       <label>Options</label>
@@ -216,17 +237,12 @@ const QuestionFormPage = () => {
                     </div>
                   )}
 
-                  {/* Student Answer */}
                   <div className="form-group">
-                    <label htmlFor={`student-${idx}`}>
-                      Student Answer *
-                    </label>
+                    <label htmlFor={`student-${idx}`}>Student Answer *</label>
                     <textarea
                       id={`student-${idx}`}
                       value={question.student_answer || ''}
-                      onChange={(e) =>
-                        updateQuestion(idx, 'student_answer', e.target.value)
-                      }
+                      onChange={(e) => updateQuestion(idx, 'student_answer', e.target.value)}
                       placeholder="Student's answer (from the exam)"
                       rows="3"
                       className="form-control"
@@ -234,25 +250,17 @@ const QuestionFormPage = () => {
                     />
                   </div>
 
-                  {/* Model/Expected Answer */}
                   <div className="form-group">
-                    <label htmlFor={`model-${idx}`}>
-                      Expected Answer (Model Answer) *
-                    </label>
+                    <label htmlFor={`model-${idx}`}>Expected Answer (Model Answer) *</label>
                     <textarea
                       id={`model-${idx}`}
                       value={question.model_answer || ''}
-                      onChange={(e) =>
-                        updateQuestion(idx, 'model_answer', e.target.value)
-                      }
-                      placeholder="Expected/correct answer (what a perfect answer should contain)"
+                      onChange={(e) => updateQuestion(idx, 'model_answer', e.target.value)}
+                      placeholder="Expected/correct answer"
                       rows="4"
                       className="form-control"
                       required
                     />
-                    <small>
-                      Enter the complete, ideal answer that the student should have provided.
-                    </small>
                   </div>
 
                   <hr className="question-divider" />
@@ -260,21 +268,13 @@ const QuestionFormPage = () => {
               ))}
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary btn-large"
-              disabled={ctxLoading || extracting}
-            >
-              {ctxLoading ? 'Evaluating...' : 'Evaluate & Get Results'}
+            <button type="submit" className="btn btn-primary btn-large" disabled={ctxLoading || extracting}>
+              {ctxLoading || extracting ? 'Evaluating...' : 'Evaluate And Get Results'}
             </button>
           </form>
         )}
 
-        <button
-          className="btn btn-secondary"
-          onClick={() => navigate('/upload')}
-          style={{ marginTop: '1rem' }}
-        >
+        <button className="btn btn-secondary" onClick={() => navigate('/upload')} style={{ marginTop: '1rem' }}>
           Back to Upload
         </button>
       </div>
@@ -285,6 +285,14 @@ const QuestionFormPage = () => {
           flex-direction: column;
           gap: 1.5rem;
           margin: 1.5rem 0;
+        }
+
+        .marks-setup-card {
+          background: #f8fbff;
+          border: 1px solid #d9e9ff;
+          border-radius: 8px;
+          padding: 1rem;
+          margin: 1rem 0;
         }
 
         .question-item {
@@ -299,12 +307,19 @@ const QuestionFormPage = () => {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 1rem;
+          gap: 1rem;
         }
 
         .question-header h3 {
           margin: 0;
           font-size: 1.1rem;
           color: #333;
+        }
+
+        .question-meta {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
 
         .question-type {
@@ -314,6 +329,15 @@ const QuestionFormPage = () => {
           border-radius: 4px;
           font-size: 0.85rem;
           text-transform: capitalize;
+        }
+
+        .question-marks {
+          background-color: #2ecc71;
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 600;
         }
 
         .form-group {
@@ -391,6 +415,13 @@ const QuestionFormPage = () => {
           padding: 1rem;
           border-radius: 4px;
           margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+          .question-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
         }
       `}</style>
     </div>

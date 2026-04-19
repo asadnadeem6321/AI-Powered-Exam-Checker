@@ -71,12 +71,15 @@ export const EvaluationProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await evaluationService.evaluateExam(examId, questions);
+      const response = await evaluationService.evaluateExamWithMarks(examId, questions);
       const evaluation = response.data.evaluation;
       setCurrentEvaluation(evaluation);
       return evaluation;
     } catch (err) {
-      const errorMessage = err.response?.data?.detail || 'Evaluation failed';
+      const errorMessage =
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        'Evaluation failed';
       setError(errorMessage);
       throw err;
     } finally {

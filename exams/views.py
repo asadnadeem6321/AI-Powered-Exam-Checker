@@ -150,10 +150,15 @@ def extract_questions(request, exam_id):
     API endpoint to extract questions from exam text
     POST /api/exams/{exam_id}/extract-questions/
     
-    This endpoint:
-    1. Gets the exam's raw text
-    2. Uses Claude AI to extract questions and answers
-    3. Returns structured question data for user review
+    Request body: { "total_marks": <int> }
+    
+    Complete Pipeline:
+    1. Retrieve exam's extracted raw text
+    2. Get total marks from request (REQUIRED)
+    3. Use Claude API to extract Q/A pairs
+    4. Segment questions with marks allocation  
+    5. Save QuestionAnswer objects to DB
+    6. Return structured data for evaluation
     """
     try:
         # Get exam
@@ -169,7 +174,29 @@ def extract_questions(request, exam_id):
                 'detail': 'Please ensure the file was successfully processed'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        logger.info(f"Extracting questions from exam {exam_id}")
+        # REQUIRED: Get total marks from request
+        total_marks = request.data.get('total_marks')
+        if not total_marks:
+            return Response({
+                'error': 'Total marks required',
+                'detail': 'Please specify the total marks for this exam'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            total_marks = int(total_marks)
+            if total_marks <= 0:
+                raise ValueError("Total marks must be greater than 0")
+        except (ValueError, TypeError):
+            return Response({
+                'error': 'Invalid total marks',
+                'detail': 'Total marks must be a positive integer'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Store total marks on exam
+        exam.total_marks = total_marks
+        exam.save()
+        
+        logger.info(f"Extracting questions from exam {exam_id} (Total Marks: {total_marks})")
         
         # Initialize question extractor
         extractor = QuestionExtractor()
@@ -186,12 +213,38 @@ def extract_questions(request, exam_id):
                 'detail': error_msg
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        logger.info(f"Successfully extracted {questions_data.get('total_questions', 0)} questions")
+        # Segment Q/A pairs and calculate marks allocation
+        from exam_checker.ai_engine.segmentation import QuestionAnswerSegmenter
+        segmenter = QuestionAnswerSegmenter()
+        questions_data['metadata']['total_marks'] = total_marks
+        segmented_questions, metadata = segmenter.segment_questions_and_answers(questions_data)
+        
+        # Persist questions to database with marks
+        for q_data in segmented_questions:
+            qa, created = QuestionAnswer.objects.update_or_create(
+                exam=exam,
+                question_number=q_data['question_number'],
+                defaults={
+                    'question_text': q_data.get('question_text', ''),
+                    'question_type': q_data.get('question_type', 'short_answer'),
+                    'options': q_data.get('options'),
+                    'student_answer': q_data.get('student_answer', ''),
+                    'model_answer': q_data.get('model_answer', ''),
+                    'marks': q_data.get('marks')
+                }
+            )
+        
+        logger.info(f"Successfully extracted and saved {len(segmented_questions)} questions with marks")
         
         return Response({
             'message': 'Questions extracted successfully',
             'exam_id': exam_id,
-            'data': questions_data
+            'total_questions': len(segmented_questions),
+            'total_marks': total_marks,
+            'data': {
+                'questions': segmented_questions,
+                'metadata': metadata
+            }
         }, status=status.HTTP_200_OK)
         
     except GPTException as e:

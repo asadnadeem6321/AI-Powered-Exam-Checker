@@ -45,14 +45,19 @@ export const examService = {
   deleteExam: (examId) =>
     api.delete(`/exams/${examId}/delete/`),
 
-  extractQuestions: (examId) =>
-    api.post(`/exams/${examId}/extract-questions/`),
+  extractQuestions: (examId, totalMarks) =>
+    api.post(`/exams/${examId}/extract-questions/`, {
+      total_marks: totalMarks,
+    }),
 };
 
 // Evaluation Services
 export const evaluationService = {
   evaluateExam: (examId, questions) =>
     api.post(`/evaluations/evaluate/${examId}/`, { questions }),
+
+  evaluateExamWithMarks: (examId, questions) =>
+    api.post(`/evaluations/evaluate-with-marks/${examId}/`, { questions }),
 
   evaluateManual: (questions) =>
     api.post('/evaluations/manual/', { questions }),

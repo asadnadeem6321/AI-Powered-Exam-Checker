@@ -15,8 +15,12 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
             'id',
             'question_number',
             'question_text',
+            'question_type',
+            'options',
             'student_answer',
             'model_answer',
+            'marks',
+            'obtained_marks',
             'created_at'
         ]
         read_only_fields = ['id', 'created_at']
@@ -39,6 +43,7 @@ class ExamSerializer(serializers.ModelSerializer):
             'file_type',
             'file_size',
             'raw_text',
+            'total_marks',
             'status',
             'error_message',
             'uploaded_at',

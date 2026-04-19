@@ -57,6 +57,9 @@ class Exam(models.Model):
     # Guest users - automatically delete after evaluation
     is_guest = models.BooleanField(default=False)
     
+    # Total marks for the exam (required for academic grading)
+    total_marks = models.IntegerField(null=True, blank=True, help_text='Total marks for the exam')
+    
     class Meta:
         db_table = 'exams'
         verbose_name = 'Exam'
@@ -88,8 +91,12 @@ class QuestionAnswer(models.Model):
     )
     question_number = models.IntegerField()
     question_text = models.TextField()
+    question_type = models.CharField(max_length=50, default='short_answer', help_text='Type of question: essay, multiple_choice, short_answer, fill_blank')
+    options = models.JSONField(null=True, blank=True, default=list, help_text='Multiple choice options if applicable')
     student_answer = models.TextField()
     model_answer = models.TextField(help_text='Expected/correct answer')
+    marks = models.IntegerField(null=True, blank=True, help_text='Marks allocated for this question')
+    obtained_marks = models.FloatField(null=True, blank=True, help_text='Marks obtained for this question after evaluation')
     
     created_at = models.DateTimeField(auto_now_add=True)
     

@@ -20,7 +20,7 @@ const DashboardPage = () => {
       }
     };
     loadData();
-  }, []);
+  }, [getExams, getEvaluations]);
 
   const handleDelete = async (examId) => {
     try {

@@ -9,6 +9,8 @@ from .ocr_handler import OCRHandler
 from .text_extractor import TextExtractor
 from .evaluator import HybridEvaluator
 from .question_extractor import QuestionExtractor
+from .segmentation import QuestionAnswerSegmenter
+from .enhanced_evaluator import EnhancedHybridEvaluator
 
 __all__ = [
     'SBERTHandler',
@@ -17,4 +19,6 @@ __all__ = [
     'TextExtractor',
     'HybridEvaluator',
     'QuestionExtractor',
+    'QuestionAnswerSegmenter',
+    'EnhancedHybridEvaluator',
 ]

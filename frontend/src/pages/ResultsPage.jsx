@@ -1,24 +1,124 @@
-import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import { useEvaluation } from '../context/EvaluationContext';
 import Loader from '../components/Loader';
 import '../styles/Results.css';
 
+const asNumber = (value, fallback = 0) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+const normalizeMarksPayload = (evaluation, fallbackExamName = '') => {
+  const percentage = asNumber(evaluation?.percentage, 0);
+  const questionResults = Array.isArray(evaluation?.question_results)
+    ? evaluation.question_results
+    : [];
+
+  return {
+    examName: fallbackExamName,
+    finalScore: percentage,
+    grade: evaluation?.grade || 'N/A',
+    feedback: evaluation?.feedback || 'No feedback available.',
+    totalAllocatedMarks: asNumber(evaluation?.total_allocated_marks, 0),
+    totalObtainedMarks: asNumber(evaluation?.total_obtained_marks, 0),
+    totalQuestions: asNumber(evaluation?.total_questions, questionResults.length),
+    questionItems: questionResults.map((qEval, index) => ({
+      id: `${qEval.question_number || index + 1}-${index}`,
+      questionNumber: qEval.question_number || index + 1,
+      questionText: qEval.question_text || 'Question text unavailable',
+      studentAnswer: qEval.student_answer || '',
+      modelAnswer: qEval.model_answer || '',
+      similarityScore: asNumber(qEval.similarity_score, 0),
+      contextualScore: asNumber(qEval.contextual_score, 0),
+      completeness: asNumber(qEval.completeness, 0),
+      accuracy: asNumber(qEval.accuracy, 0),
+      clarity: asNumber(qEval.clarity, 0),
+      finalScore: asNumber(qEval.final_score_pct, 0),
+      marksAllocated: asNumber(qEval.marks_allocated, 0),
+      obtainedMarks: asNumber(qEval.obtained_marks, 0),
+      feedback: qEval.feedback || '',
+      strengths: Array.isArray(qEval.strengths) ? qEval.strengths : [],
+      weaknesses: Array.isArray(qEval.weaknesses) ? qEval.weaknesses : [],
+      suggestions: qEval.suggestions || '',
+    })),
+  };
+};
+
+const normalizeStoredPayload = (evaluation) => {
+  const metadata = evaluation?.evaluation_metadata || {};
+  const questionEvals = Array.isArray(evaluation?.question_evaluations)
+    ? evaluation.question_evaluations
+    : [];
+
+  return {
+    examName: evaluation?.exam?.file_name || 'Exam',
+    finalScore: asNumber(evaluation?.final_score, 0),
+    grade: evaluation?.grade || 'N/A',
+    feedback: evaluation?.overall_feedback || 'No feedback available.',
+    totalAllocatedMarks: asNumber(metadata?.total_allocated_marks, 0),
+    totalObtainedMarks: asNumber(metadata?.total_obtained_marks, 0),
+    totalQuestions: asNumber(metadata?.total_questions, questionEvals.length),
+    questionItems: questionEvals.map((qEval, index) => ({
+      id: qEval.id || `${index}`,
+      questionNumber: qEval?.question?.question_number || index + 1,
+      questionText: qEval?.question?.question_text || 'Question text unavailable',
+      studentAnswer: qEval?.question?.student_answer || '',
+      modelAnswer: qEval?.question?.model_answer || '',
+      similarityScore: asNumber(qEval.similarity_score, 0),
+      contextualScore: asNumber(qEval.contextual_score, 0),
+      completeness: asNumber(qEval.completeness, 0),
+      accuracy: asNumber(qEval.accuracy, 0),
+      clarity: asNumber(qEval.clarity, 0),
+      finalScore: asNumber(qEval.final_score, 0),
+      marksAllocated: asNumber(qEval?.question?.marks, 0),
+      obtainedMarks: asNumber(qEval?.question?.obtained_marks, 0),
+      feedback: qEval.feedback || '',
+      strengths: Array.isArray(qEval.strengths) ? qEval.strengths : [],
+      weaknesses: Array.isArray(qEval.weaknesses) ? qEval.weaknesses : [],
+      suggestions: qEval.suggestions || '',
+    })),
+  };
+};
+
 const ResultsPage = () => {
   const { evaluationId } = useParams();
+  const location = useLocation();
   const { currentEvaluation, loading, error, getEvaluationDetail } = useEvaluation();
 
-  useEffect(() => {
-    getEvaluationDetail(evaluationId).catch((err) => {
-      console.error('Error loading evaluation:', err);
-    });
-  }, [evaluationId]);
+  const inlineEvaluation = location.state?.evaluation || null;
+  const inlineExamName = location.state?.exam?.file_name || '';
 
-  if (loading || !currentEvaluation) {
+  useEffect(() => {
+    if (inlineEvaluation) {
+      return;
+    }
+
+    const numericId = Number(evaluationId);
+    if (Number.isFinite(numericId)) {
+      getEvaluationDetail(evaluationId).catch((err) => {
+        console.error('Error loading evaluation:', err);
+      });
+    }
+  }, [evaluationId, getEvaluationDetail, inlineEvaluation]);
+
+  const normalized = useMemo(() => {
+    if (inlineEvaluation && inlineEvaluation.total_questions !== undefined) {
+      return normalizeMarksPayload(inlineEvaluation, inlineExamName);
+    }
+
+    if (currentEvaluation) {
+      return normalizeStoredPayload(currentEvaluation);
+    }
+
+    return null;
+  }, [inlineEvaluation, inlineExamName, currentEvaluation]);
+
+  if ((loading && !normalized) || (!normalized && !error)) {
     return <Loader />;
   }
 
-  if (error) {
+  if (error && !normalized) {
     return (
       <div className="results-container">
         <div className="error-message">{error}</div>
@@ -26,59 +126,73 @@ const ResultsPage = () => {
     );
   }
 
-  const { exam, final_score, grade, overall_feedback, question_evaluations, evaluation_metadata } = currentEvaluation;
+  if (!normalized) {
+    return (
+      <div className="results-container">
+        <div className="error-message">No evaluation data available.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="results-container">
       <div className="results-header">
         <h1>Evaluation Results</h1>
-        <p className="exam-name">{exam.file_name}</p>
+        <p className="exam-name">{normalized.examName}</p>
       </div>
 
       <div className="score-card">
         <div className="score-circle">
-          <div className="score-value">{final_score.toFixed(1)}</div>
+          <div className="score-value">{normalized.finalScore.toFixed(1)}</div>
           <div className="score-max">/100</div>
         </div>
         <div className="score-info">
-          <h2 className={`grade-${grade}`}>{grade}</h2>
+          <h2 className={`grade-${normalized.grade}`}>{normalized.grade}</h2>
           <p className="score-text">Overall Performance</p>
           <p className="score-formula">Final Score = 0.6 x Similarity + 0.4 x Context</p>
-          {evaluation_metadata?.percentage !== undefined && (
-            <p className="score-meta">Percentage: {evaluation_metadata.percentage}%</p>
-          )}
+          <p className="score-meta">Questions: {normalized.totalQuestions}</p>
+          <p className="score-meta">
+            Marks: {normalized.totalObtainedMarks.toFixed(2)} / {normalized.totalAllocatedMarks}
+          </p>
         </div>
       </div>
 
       <div className="feedback-section">
         <h2>Overall Feedback</h2>
         <div className="feedback-box">
-          <p>{overall_feedback}</p>
+          <p>{normalized.feedback}</p>
         </div>
       </div>
 
       <div className="questions-section">
         <h2>Question-wise Analysis</h2>
         <div className="questions-list">
-          {question_evaluations && question_evaluations.length > 0 ? (
-            question_evaluations.map((qEval, index) => (
+          {normalized.questionItems.length > 0 ? (
+            normalized.questionItems.map((qEval) => (
               <div key={qEval.id} className="question-item">
                 <div className="question-header">
-                  <h3>Question {index + 1}: {qEval.question.question_text}</h3>
-                  <span className={`q-score score-${Math.round(qEval.final_score / 20)}`}>
-                    {qEval.final_score.toFixed(1)}/100
-                  </span>
+                  <h3>
+                    Question {qEval.questionNumber}: {qEval.questionText}
+                  </h3>
+                  <div className="question-header-right">
+                    <span className={`q-score score-${Math.max(1, Math.min(5, Math.round(qEval.finalScore / 20)))}`}>
+                      {qEval.finalScore.toFixed(1)}/100
+                    </span>
+                    <span className="q-marks">
+                      {qEval.obtainedMarks.toFixed(2)} / {qEval.marksAllocated} marks
+                    </span>
+                  </div>
                 </div>
 
                 <div className="question-content">
                   <div className="qa-pair">
                     <label>Student's Answer:</label>
-                    <p className="answer-text">{qEval.question.student_answer}</p>
+                    <p className="answer-text">{qEval.studentAnswer}</p>
                   </div>
 
                   <div className="qa-pair">
                     <label>Model Answer:</label>
-                    <p className="answer-text model-answer">{qEval.question.model_answer}</p>
+                    <p className="answer-text model-answer">{qEval.modelAnswer}</p>
                   </div>
                 </div>
 
@@ -86,66 +200,41 @@ const ResultsPage = () => {
                   <div className="metric">
                     <label>Similarity Score (SBERT)</label>
                     <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{
-                          width: `${qEval.similarity_score}%`,
-                        }}
-                      ></div>
+                      <div className="progress-fill" style={{ width: `${qEval.similarityScore}%` }}></div>
                     </div>
-                    <span className="metric-value">{qEval.similarity_score.toFixed(1)}%</span>
+                    <span className="metric-value">{qEval.similarityScore.toFixed(1)}%</span>
                   </div>
 
                   <div className="metric">
                     <label>Contextual Score (GPT)</label>
                     <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{
-                          width: `${qEval.contextual_score}%`,
-                        }}
-                      ></div>
+                      <div className="progress-fill" style={{ width: `${qEval.contextualScore}%` }}></div>
                     </div>
-                    <span className="metric-value">{qEval.contextual_score.toFixed(1)}%</span>
+                    <span className="metric-value">{qEval.contextualScore.toFixed(1)}%</span>
                   </div>
 
                   <div className="metric">
                     <label>Completeness</label>
                     <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{
-                          width: `${qEval.completeness}%`,
-                        }}
-                      ></div>
+                      <div className="progress-fill" style={{ width: `${qEval.completeness}%` }}></div>
                     </div>
-                    <span className="metric-value">{qEval.completeness?.toFixed(1) || 'N/A'}%</span>
+                    <span className="metric-value">{qEval.completeness.toFixed(1)}%</span>
                   </div>
 
                   <div className="metric">
                     <label>Accuracy</label>
                     <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{
-                          width: `${qEval.accuracy}%`,
-                        }}
-                      ></div>
+                      <div className="progress-fill" style={{ width: `${qEval.accuracy}%` }}></div>
                     </div>
-                    <span className="metric-value">{qEval.accuracy?.toFixed(1) || 'N/A'}%</span>
+                    <span className="metric-value">{qEval.accuracy.toFixed(1)}%</span>
                   </div>
 
                   <div className="metric">
                     <label>Clarity</label>
                     <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{
-                          width: `${qEval.clarity}%`,
-                        }}
-                      ></div>
+                      <div className="progress-fill" style={{ width: `${qEval.clarity}%` }}></div>
                     </div>
-                    <span className="metric-value">{qEval.clarity?.toFixed(1) || 'N/A'}%</span>
+                    <span className="metric-value">{qEval.clarity.toFixed(1)}%</span>
                   </div>
                 </div>
 
@@ -153,9 +242,9 @@ const ResultsPage = () => {
                   <h4>Detailed Feedback</h4>
                   <p>{qEval.feedback}</p>
 
-                  {qEval.strengths && qEval.strengths.length > 0 && (
+                  {qEval.strengths.length > 0 && (
                     <div className="strengths">
-                      <h5>✓ Strengths:</h5>
+                      <h5>Strengths:</h5>
                       <ul>
                         {qEval.strengths.map((strength, i) => (
                           <li key={i}>{strength}</li>
@@ -164,9 +253,9 @@ const ResultsPage = () => {
                     </div>
                   )}
 
-                  {qEval.weaknesses && qEval.weaknesses.length > 0 && (
+                  {qEval.weaknesses.length > 0 && (
                     <div className="weaknesses">
-                      <h5>✗ Areas for Improvement:</h5>
+                      <h5>Areas for Improvement:</h5>
                       <ul>
                         {qEval.weaknesses.map((weakness, i) => (
                           <li key={i}>{weakness}</li>
@@ -177,7 +266,7 @@ const ResultsPage = () => {
 
                   {qEval.suggestions && (
                     <div className="suggestions">
-                      <h5>💡 Suggestions:</h5>
+                      <h5>Suggestions:</h5>
                       <p>{qEval.suggestions}</p>
                     </div>
                   )}

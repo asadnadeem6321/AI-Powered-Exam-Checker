@@ -7,8 +7,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
-  const [isGuest, setIsGuest] = useState(false);
-  
+
   const navigate = useNavigate();
   const { login, loading, error, isAuthenticated } = useAuth();
 
@@ -37,7 +36,6 @@ const LoginPage = () => {
   };
 
   const handleGuestAccess = () => {
-    setIsGuest(true);
     navigate('/upload');
   };
 

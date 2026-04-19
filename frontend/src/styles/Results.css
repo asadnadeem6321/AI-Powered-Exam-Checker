@@ -133,6 +133,13 @@
   gap: 16px;
 }
 
+.question-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .question-header h3 {
   font-size: 16px;
   color: var(--gray-800);
@@ -147,6 +154,16 @@
   white-space: nowrap;
   font-weight: 600;
   font-size: 14px;
+}
+
+.q-marks {
+  background-color: #ecfdf3;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
 }
 
 .score-1 {
@@ -346,6 +363,10 @@
 
   .question-header {
     flex-direction: column;
+  }
+
+  .question-header-right {
+    align-items: flex-start;
   }
 
   .question-metrics {
