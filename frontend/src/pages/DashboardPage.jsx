@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEvaluation } from '../context/EvaluationContext';
+import { evaluationService } from '../services/examService';
 import Loader from '../components/Loader';
 import '../styles/Dashboard.css';
 
@@ -33,6 +34,18 @@ const DashboardPage = () => {
 
   const handleViewResult = (evaluationId) => {
     navigate(`/results/${evaluationId}`);
+  };
+
+  const handleViewResultByExam = async (examId) => {
+    try {
+      const response = await evaluationService.getExamEvaluation(examId);
+      const evaluationId = response?.data?.id;
+      if (evaluationId) {
+        navigate(`/results/${evaluationId}`);
+      }
+    } catch (err) {
+      console.error('Error fetching evaluation by exam:', err);
+    }
   };
 
   if (loading && exams.length === 0) {
@@ -93,7 +106,7 @@ const DashboardPage = () => {
                     <div className="exam-actions">
                       {exam.has_evaluation && (
                         <button
-                          onClick={() => handleViewResult(exam.id)}
+                          onClick={() => handleViewResultByExam(exam.id)}
                           className="btn btn-small btn-primary"
                         >
                           View Result

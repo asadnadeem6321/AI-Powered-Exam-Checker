@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
 import { userService } from '../services/examService';
 
 const AuthContext = createContext();
@@ -17,6 +17,44 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const parseAuthError = useCallback((err, fallback) => {
+    const data = err?.response?.data;
+
+    if (!data) {
+      return fallback;
+    }
+
+    if (typeof data.error === 'string' && data.error.trim()) {
+      return data.error;
+    }
+
+    if (typeof data.detail === 'string' && data.detail.trim()) {
+      return data.detail;
+    }
+
+    if (data.field_errors && typeof data.field_errors === 'object') {
+      const messages = Object.entries(data.field_errors)
+        .map(([field, value]) => {
+          const joined = Array.isArray(value) ? value.join(', ') : String(value);
+          return `${field}: ${joined}`;
+        })
+        .join(' | ');
+      if (messages) {
+        return messages;
+      }
+    }
+
+    const serializerErrors = Object.entries(data)
+      .filter(([key]) => key !== 'status')
+      .map(([field, value]) => {
+        const joined = Array.isArray(value) ? value.join(', ') : String(value);
+        return `${field}: ${joined}`;
+      })
+      .join(' | ');
+
+    return serializerErrors || fallback;
+  }, []);
+
   const register = useCallback(async (email, name, password, passwordConfirm) => {
     setLoading(true);
     setError(null);
@@ -31,13 +69,13 @@ export const AuthProvider = ({ children }) => {
 
       return userData;
     } catch (err) {
-      const errorMessage = err.response?.data?.field_errors || err.response?.data?.error || 'Registration failed';
+      const errorMessage = parseAuthError(err, 'Registration failed');
       setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [parseAuthError]);
 
   const login = useCallback(async (email, password) => {
     setLoading(true);
@@ -53,13 +91,13 @@ export const AuthProvider = ({ children }) => {
 
       return userData;
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Login failed';
+      const errorMessage = parseAuthError(err, 'Login failed');
       setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [parseAuthError]);
 
   const logout = useCallback(async () => {
     setLoading(true);
@@ -86,10 +124,27 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      setUser(null);
       setIsAuthenticated(false);
       throw err;
     }
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+
+    setLoading(true);
+    getProfile()
+      .catch(() => {
+        setError(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [getProfile]);
 
   const value = {
     user,
