@@ -39,9 +39,11 @@ const DashboardPage = () => {
   const handleViewResultByExam = async (examId) => {
     try {
       const response = await evaluationService.getExamEvaluation(examId);
-      const evaluationId = response?.data?.id;
+      const evaluationId = response?.data?.evaluation?.id;
       if (evaluationId) {
         navigate(`/results/${evaluationId}`);
+      } else {
+        console.error('Evaluation id missing in exam-evaluation response');
       }
     } catch (err) {
       console.error('Error fetching evaluation by exam:', err);
