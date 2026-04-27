@@ -1,6 +1,6 @@
 """
 Enhanced Hybrid Evaluator with Academic Marks Calculation
-Combines SBERT (60%) + Claude GPT (40%) with proper marks allocation
+Combines SBERT similarity with deterministic context scoring and marks allocation
 """
 import logging
 from django.conf import settings
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class EnhancedHybridEvaluator:
     """
     Enhanced evaluation engine that:
-    1. Computes hybrid scores (SBERT 60% + GPT 40%)
+    1. Computes hybrid scores (SBERT + deterministic context scoring)
     2. Calculates obtained marks from scores and total marks
     3. Provides academic grading with proper feedback
     """
@@ -21,16 +21,18 @@ class EnhancedHybridEvaluator:
         """Initialize evaluator"""
         try:
             from .sbert_handler import SBERTHandler
-            from .gpt_handler import GPTHandler
+            from .context_scorer import DeterministicContextScorer
             from .preprocessor import TextPreprocessor
             
             self.sbert = SBERTHandler()
-            self.gpt = GPTHandler()
+            self.context_scorer = DeterministicContextScorer()
             self.preprocessor = TextPreprocessor()
-            self.similarity_weight = getattr(settings, 'SIMILARITY_WEIGHT', 0.6)
-            self.context_weight = getattr(settings, 'CONTEXT_WEIGHT', 0.4)
+            self.similarity_weight = getattr(settings, 'SIMILARITY_WEIGHT', 0.7)
+            self.context_weight = getattr(settings, 'CONTEXT_WEIGHT', 0.3)
             
-            logger.info(f"Enhanced Evaluator initialized (SBERT={self.similarity_weight}, GPT={self.context_weight})")
+            logger.info(
+                f"Enhanced Evaluator initialized (SBERT={self.similarity_weight}, CONTEXT={self.context_weight})"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize Enhanced Evaluator: {str(e)}")
             raise EvaluationException(f"Failed to initialize evaluator: {str(e)}")
@@ -63,15 +65,14 @@ class EnhancedHybridEvaluator:
             similarity_pct = similarity_score * 100 if similarity_score <= 1 else similarity_score
             similarity_pct = min(100, max(0, similarity_pct))
             
-            # Get GPT contextual evaluation (0-100 range)
-            gpt_result = self.gpt.evaluate_answer(
+            # Deterministic context scoring (0-100 range)
+            context_result = self.context_scorer.compute_context_score(
                 student_answer=student_answer,
-                model_answer=model_answer,
-                question_text=question_text
+                model_answer=model_answer
             )
-            contextual_score = gpt_result.get('score', 50)
+            contextual_score = context_result.get('context_score', 0)
             
-            # Hybrid scoring formula: (0.6 × SBERT%) + (0.4 × GPT%)
+            # Hybrid scoring formula: (0.7 × SBERT%) + (0.3 × Context%)
             final_score_pct = (self.similarity_weight * similarity_pct) + (self.context_weight * contextual_score)
             final_score_pct = min(100, max(0, final_score_pct))  # Clamp to 0-100
             
@@ -81,20 +82,35 @@ class EnhancedHybridEvaluator:
                 obtained_marks = (final_score_pct / 100) * marks
                 obtained_marks = round(obtained_marks, 2)
             
+            strengths, weaknesses, suggestions = self._derive_rule_based_feedback(
+                similarity_pct=similarity_pct,
+                context=context_result
+            )
+
             result = {
                 'similarity_score': round(similarity_pct, 2),
                 'contextual_score': round(contextual_score, 2),
                 'final_score_pct': round(final_score_pct, 2),
                 'marks_allocated': marks,
                 'obtained_marks': obtained_marks,
-                'feedback': gpt_result.get('feedback', ''),
-                'completeness': gpt_result.get('completeness', final_score_pct),
-                'accuracy': gpt_result.get('accuracy', final_score_pct),
-                'clarity': gpt_result.get('clarity', final_score_pct),
-                'strengths': gpt_result.get('strengths', []),
-                'weaknesses': gpt_result.get('weaknesses', []),
-                'suggestions': gpt_result.get('suggestions', ''),
-                'confidence': 'high' if similarity_pct >= 50 else 'low'
+                'feedback': self._build_question_feedback(
+                    similarity_pct=similarity_pct,
+                    context_score=contextual_score,
+                    context=context_result
+                ),
+                'completeness': context_result.get('length_score', final_score_pct),
+                'accuracy': round((0.7 * similarity_pct) + (0.3 * context_result.get('keyword_score', 0)), 2),
+                'clarity': context_result.get('structure_score', final_score_pct),
+                'strengths': strengths,
+                'weaknesses': weaknesses,
+                'suggestions': suggestions,
+                'keyword_score': context_result.get('keyword_score', 0),
+                'length_score': context_result.get('length_score', 0),
+                'structure_score': context_result.get('structure_score', 0),
+                'matched_keywords': context_result.get('matched_keywords', []),
+                'matched_keyword_count': context_result.get('matched_count', 0),
+                'total_expected_keywords': context_result.get('total_keywords', 0),
+                'confidence': 'high' if similarity_pct >= 50 and contextual_score >= 50 else 'low'
             }
             
             if result['confidence'] == 'low':
@@ -106,6 +122,58 @@ class EnhancedHybridEvaluator:
         except Exception as e:
             logger.error(f"Error evaluating answer: {str(e)}")
             raise EvaluationException(f"Evaluation failed: {str(e)}")
+
+    def _derive_rule_based_feedback(self, similarity_pct, context):
+        """Derive strengths/weaknesses/suggestions without external APIs."""
+        strengths = []
+        weaknesses = []
+        suggestions = []
+
+        keyword_score = context.get('keyword_score', 0)
+        length_score = context.get('length_score', 0)
+        structure_score = context.get('structure_score', 0)
+
+        if similarity_pct >= 75:
+            strengths.append('Strong semantic alignment with expected answer')
+        elif similarity_pct < 50:
+            weaknesses.append('Meaning does not sufficiently align with expected concepts')
+            suggestions.append('Focus on the core concept and terminology asked in the question')
+
+        if keyword_score >= 70:
+            strengths.append('Good coverage of expected key points')
+        else:
+            weaknesses.append('Missing important expected keywords/concepts')
+            suggestions.append('Include more key terms directly related to the expected answer')
+
+        if length_score >= 70:
+            strengths.append('Answer length is adequate for expected coverage')
+        else:
+            weaknesses.append('Answer appears too brief for full coverage')
+            suggestions.append('Expand the answer to cover all main points completely')
+
+        if structure_score >= 70:
+            strengths.append('Response structure is readable and organized')
+        else:
+            weaknesses.append('Writing structure can be improved for clarity')
+            suggestions.append('Use complete sentences and punctuation for clearer presentation')
+
+        if not strengths:
+            strengths.append('Attempted answer is present and evaluable')
+
+        if not suggestions:
+            suggestions.append('Maintain this quality and refine precision where possible')
+
+        return strengths[:3], weaknesses[:3], ' '.join(suggestions[:3])
+
+    def _build_question_feedback(self, similarity_pct, context_score, context):
+        """Build concise deterministic question feedback text."""
+        return (
+            f"Semantic Similarity: {similarity_pct:.1f}%. "
+            f"Context Score: {context_score:.1f}% "
+            f"(Keyword: {context.get('keyword_score', 0):.1f}%, "
+            f"Length: {context.get('length_score', 0):.1f}%, "
+            f"Structure: {context.get('structure_score', 0):.1f}%)."
+        )
     
     def evaluate_multiple_with_marks(self, qa_pairs, total_marks=None):
         """

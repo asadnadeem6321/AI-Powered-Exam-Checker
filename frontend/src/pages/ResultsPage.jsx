@@ -149,7 +149,7 @@ const ResultsPage = () => {
         <div className="score-info">
           <h2 className={`grade-${normalized.grade}`}>{normalized.grade}</h2>
           <p className="score-text">Overall Performance</p>
-          <p className="score-formula">Final Score = 0.6 x Similarity + 0.4 x Context</p>
+          <p className="score-formula">Final Score = 0.7 x Similarity + 0.3 x Context</p>
           <p className="score-meta">Questions: {normalized.totalQuestions}</p>
           <p className="score-meta">
             Marks: {normalized.totalObtainedMarks.toFixed(2)} / {normalized.totalAllocatedMarks}
@@ -206,7 +206,7 @@ const ResultsPage = () => {
                   </div>
 
                   <div className="metric">
-                    <label>Contextual Score (GPT)</label>
+                    <label>Context Score (Formula)</label>
                     <div className="progress-bar">
                       <div className="progress-fill" style={{ width: `${qEval.contextualScore}%` }}></div>
                     </div>
