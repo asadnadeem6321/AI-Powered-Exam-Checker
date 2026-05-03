@@ -22,10 +22,12 @@ class EnhancedHybridEvaluator:
         try:
             from .sbert_handler import SBERTHandler
             from .context_scorer import DeterministicContextScorer
+            from .gpt_handler import GPTHandler
             from .preprocessor import TextPreprocessor
             
             self.sbert = SBERTHandler()
             self.context_scorer = DeterministicContextScorer()
+            self.gpt = GPTHandler()
             self.preprocessor = TextPreprocessor()
             self.similarity_weight = getattr(settings, 'SIMILARITY_WEIGHT', 0.7)
             self.context_weight = getattr(settings, 'CONTEXT_WEIGHT', 0.3)
@@ -66,11 +68,36 @@ class EnhancedHybridEvaluator:
             similarity_pct = min(100, max(0, similarity_pct))
             
             # Deterministic context scoring (0-100 range)
-            context_result = self.context_scorer.compute_context_score(
-                student_answer=student_answer,
-                model_answer=model_answer
-            )
-            contextual_score = context_result.get('context_score', 0)
+            # Prefer API-based contextual evaluation (Claude). Fall back to deterministic scorer on failure.
+            context_result = {}
+            contextual_score = 0
+            try:
+                api_result = self.gpt.evaluate_answer(
+                    student_answer=clean_student,
+                    model_answer=clean_model,
+                    question_text=question_text
+                )
+
+                # Map API fields to internal context_result structure
+                context_result = {
+                    'context_score': api_result.get('score', 0),
+                    'keyword_score': api_result.get('keyword_score', 0),
+                    'length_score': api_result.get('length_adequacy', 0),
+                    'structure_score': api_result.get('structure_score', 0),
+                    'matched_keywords': api_result.get('matched_keywords', []),
+                    'matched_count': len(api_result.get('matched_keywords', [])),
+                    'total_keywords': api_result.get('total_expected_keywords', 0),
+                    'api_feedback': api_result.get('feedback', ''),
+                }
+
+                contextual_score = context_result.get('context_score', 0)
+            except Exception as e:
+                logger.warning(f"API context evaluation failed, falling back to deterministic scorer: {e}")
+                context_result = self.context_scorer.compute_context_score(
+                    student_answer=student_answer,
+                    model_answer=model_answer
+                )
+                contextual_score = context_result.get('context_score', 0)
             
             # Hybrid scoring formula: (0.7 × SBERT%) + (0.3 × Context%)
             final_score_pct = (self.similarity_weight * similarity_pct) + (self.context_weight * contextual_score)
@@ -99,7 +126,7 @@ class EnhancedHybridEvaluator:
                     context=context_result
                 ),
                 'completeness': context_result.get('length_score', final_score_pct),
-                'accuracy': round((0.7 * similarity_pct) + (0.3 * context_result.get('keyword_score', 0)), 2),
+                'accuracy': round((self.similarity_weight * similarity_pct) + (self.context_weight * context_result.get('keyword_score', 0)), 2),
                 'clarity': context_result.get('structure_score', final_score_pct),
                 'strengths': strengths,
                 'weaknesses': weaknesses,
