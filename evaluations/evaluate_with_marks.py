@@ -137,7 +137,8 @@ def evaluate_exam_with_marks(request, exam_id):
                         'total_obtained_marks': evaluation_result['total_obtained_marks'],
                         'evaluation_method': 'hybrid_with_manual_context',
                         'sbert_weight': 0.7,
-                        'context_weight': 0.3
+                        'context_weight': 0.3,
+                        'question_results': evaluation_result.get('question_results', [])
                     }
                 )
                 

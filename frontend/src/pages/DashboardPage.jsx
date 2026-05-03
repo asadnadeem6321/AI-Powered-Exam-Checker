@@ -106,14 +106,12 @@ const DashboardPage = () => {
                       <p><strong>Uploaded:</strong> {new Date(exam.uploaded_at).toLocaleDateString()}</p>
                     </div>
                     <div className="exam-actions">
-                      {exam.has_evaluation && (
-                        <button
-                          onClick={() => handleViewResultByExam(exam.id)}
-                          className="btn btn-small btn-primary"
-                        >
-                          View Result
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleViewResultByExam(exam.id)}
+                        className="btn btn-small btn-primary"
+                      >
+                        View Result
+                      </button>
                       {deleteConfirm === exam.id ? (
                         <div className="confirm-delete">
                           <p>Delete this exam?</p>
