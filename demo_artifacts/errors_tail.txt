@@ -1,0 +1,250 @@
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/library.py", line 271, in render
+    new_context = context.new(_dict)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 273, in new
+    new_context = super().new(values)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 110, in new
+    new_context = copy(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/copy.py", line 82, in copy
+    return copier(x)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 158, in __copy__
+    duplicate = super().__copy__()
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 39, in __copy__
+    duplicate.dicts = self.dicts[:]
+    ^^^^^^^^^^^^^^^
+AttributeError: 'super' object has no attribute 'dicts' and no __dict__ for setting new attributes
+ERROR 2026-04-23 05:44:24,175 basehttp "GET /admin/users/user/ HTTP/1.1" 500 463962
+ERROR 2026-04-23 05:44:29,793 log Internal Server Error: /admin/django_celery_beat/solarschedule/
+Traceback (most recent call last):
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/library.py", line 271, in render
+    new_context = context.new(_dict)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 273, in new
+    new_context = super().new(values)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 110, in new
+    new_context = copy(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/copy.py", line 82, in copy
+    return copier(x)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 158, in __copy__
+    duplicate = super().__copy__()
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 39, in __copy__
+    duplicate.dicts = self.dicts[:]
+    ^^^^^^^^^^^^^^^
+AttributeError: 'super' object has no attribute 'dicts' and no __dict__ for setting new attributes
+ERROR 2026-04-23 05:44:29,803 basehttp "GET /admin/django_celery_beat/solarschedule/ HTTP/1.1" 500 464213
+ERROR 2026-04-23 07:42:31,308 views Error during logout: 'RefreshToken' object has no attribute 'blacklist'
+ERROR 2026-04-23 07:43:35,567 question_extractor Error extracting questions (attempt 1): Connection error.
+ERROR 2026-04-23 07:43:37,831 question_extractor Error extracting questions (attempt 2): Connection error.
+ERROR 2026-04-23 07:43:41,237 question_extractor Error extracting questions (attempt 3): Connection error.
+ERROR 2026-04-23 07:43:41,237 views Claude API error: Error extracting questions: Connection error.
+ERROR 2026-04-23 07:43:41,237 log Internal Server Error: /api/exams/29/extract-questions/
+ERROR 2026-04-23 07:43:41,238 basehttp "POST /api/exams/29/extract-questions/ HTTP/1.1" 500 105
+ERROR 2026-04-26 19:02:28,894 views Error during logout: 'RefreshToken' object has no attribute 'blacklist'
+ERROR 2026-04-26 19:02:58,158 views Error during logout: 'RefreshToken' object has no attribute 'blacklist'
+ERROR 2026-04-28 06:59:32,921 views Error uploading exam: {'file': [ErrorDetail(string='The submitted data was not a file. Check the encoding type on the form.', code='invalid')]}
+ERROR 2026-04-28 11:58:00,427 log Internal Server Error: /admin/exams/exam/
+Traceback (most recent call last):
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/library.py", line 271, in render
+    new_context = context.new(_dict)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 273, in new
+    new_context = super().new(values)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 110, in new
+    new_context = copy(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/copy.py", line 82, in copy
+    return copier(x)
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 158, in __copy__
+    duplicate = super().__copy__()
+  File "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker/venv/lib/python3.14/site-packages/django/template/context.py", line 39, in __copy__
+    duplicate.dicts = self.dicts[:]
+    ^^^^^^^^^^^^^^^
+AttributeError: 'super' object has no attribute 'dicts' and no __dict__ for setting new attributes
+ERROR 2026-04-28 11:58:00,453 basehttp "GET /admin/exams/exam/ HTTP/1.1" 500 463965
