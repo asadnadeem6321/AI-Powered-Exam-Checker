@@ -119,7 +119,7 @@ class QuestionAnswerAdmin(admin.ModelAdmin):
         'question_number',
         'get_question_preview',
         'marks',
-        'obtained_marks',
+        'get_obtained_marks_display',
         'created_at',
     ]
     list_filter = ['created_at', 'question_type', 'exam__uploaded_at']
@@ -146,3 +146,19 @@ class QuestionAnswerAdmin(admin.ModelAdmin):
     def get_question_preview(self, obj):
         return obj.question_text[:50] + '...' if len(obj.question_text) > 50 else obj.question_text
     get_question_preview.short_description = 'Question Preview'
+
+    def get_obtained_marks_display(self, obj):
+        """Show stored obtained marks, or fall back to the linked evaluation."""
+        if obj.obtained_marks is not None:
+            return round(obj.obtained_marks, 2)
+
+        evaluation = getattr(obj, 'evaluation_result', None)
+        if evaluation:
+            if obj.marks:
+                return round((evaluation.final_score / 100) * obj.marks, 2)
+            return round(evaluation.final_score, 2)
+
+        return '-'
+
+    get_obtained_marks_display.short_description = 'Obtained Marks'
+    get_obtained_marks_display.admin_order_field = 'obtained_marks'
