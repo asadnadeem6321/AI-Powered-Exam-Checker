@@ -95,11 +95,52 @@ class EnhancedHybridEvaluator:
                 2,
             )
 
+            # Penalize answers that are only topically related but still miss the core concept.
+            # This prevents unrelated answers from scoring high simply because they mention
+            # the same subject area or have similar length/format.
+            keyword_score = context_result.get('keyword_score', 0)
+            completeness_score = context_result.get('completeness_score', 0)
+            semantic_mismatch = (
+                similarity_pct >= 60
+                and keyword_score < 20
+                and completeness_score < 35
+            )
+
+            if semantic_mismatch:
+                contextual_score *= 0.40
+                final_penalty = 0.35
+            elif keyword_score < 15 and completeness_score < 25:
+                # Mild penalty for answers that barely touch the expected concept.
+                contextual_score *= 0.70
+                final_penalty = 0.60
+            else:
+                final_penalty = 1.0
+
+            # Hard cap for answers that share a few tokens but fail to cover the
+            # expected meaning. This is the main fix for wrong-but-topical answers.
+            relevance_cap = None
+            if completeness_score <= 20 and keyword_score <= 25:
+                relevance_cap = 15.0
+            elif completeness_score <= 35 and keyword_score <= 30:
+                relevance_cap = 22.0
+            elif completeness_score <= 45 and keyword_score <= 35:
+                relevance_cap = 28.0
+
+            if relevance_cap is not None:
+                contextual_score = min(contextual_score, relevance_cap)
+
+            contextual_score = round(min(100.0, max(0.0, contextual_score)), 2)
+
             context_result['accuracy_score'] = accuracy_score
             context_result['context_score'] = contextual_score
             
             # Hybrid scoring formula: (0.7 × SBERT%) + (0.3 × Context%)
             final_score_pct = (self.similarity_weight * similarity_pct) + (self.context_weight * contextual_score)
+            final_score_pct *= final_penalty
+
+            if relevance_cap is not None:
+                final_score_pct = min(final_score_pct, relevance_cap)
+
             final_score_pct = min(100, max(0, final_score_pct))  # Clamp to 0-100
             
             # Calculate obtained marks
@@ -136,6 +177,9 @@ class EnhancedHybridEvaluator:
                 'completeness_score': context_result.get('completeness_score', 0),
                 'clarity_score': context_result.get('clarity_score', 0),
                 'accuracy_score': accuracy_score,
+                'relevance_penalty': final_penalty,
+                'semantic_mismatch': semantic_mismatch,
+                'relevance_cap': relevance_cap,
                 'matched_keywords': context_result.get('matched_keywords', []),
                 'matched_keyword_count': context_result.get('matched_count', 0),
                 'total_expected_keywords': context_result.get('total_keywords', 0),

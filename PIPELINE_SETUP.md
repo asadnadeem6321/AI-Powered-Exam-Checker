@@ -204,7 +204,7 @@ Return results to frontend
 - Backend running on port 8000
 - Frontend running on port 3000
 - Claude API key configured in .env
-- Python 3.14 with Django, DRF, Anthropic SDK
+- Python 3.11 with Django, DRF, Anthropic SDK, and PyTorch for SBERT
 - Node.js and npm for React
 
 ## ✨ Key Features

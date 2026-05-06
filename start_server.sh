@@ -10,6 +10,7 @@
 set -e  # Exit on error
 
 PROJECT_DIR="/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker"
+PYTHON_BIN="python3.11"
 
 # Colors
 GREEN='\033[0;32m'
@@ -38,12 +39,26 @@ echo -e "${GREEN}✅ Old processes stopped${NC}\n"
 
 # Verify environment
 echo -e "${YELLOW}[2/6] Verifying environment...${NC}"
-if [ ! -d "venv" ]; then
-    echo -e "${RED}❌ Virtual environment not found${NC}"
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+    echo -e "${RED}❌ Python 3.11 not found in PATH${NC}"
+    echo "   Install it first (macOS/Homebrew): brew install python@3.11"
     exit 1
 fi
+
+if [ ! -d "venv" ] || [ ! -x "venv/bin/python" ]; then
+    echo -e "${YELLOW}⚠️  venv not found; creating a fresh Python 3.11 virtual environment...${NC}"
+    "$PYTHON_BIN" -m venv venv
+fi
+
 source venv/bin/activate
-echo -e "${GREEN}✅ Virtual environment activated${NC}\n"
+VENV_PYTHON="venv/bin/python"
+VENV_VERSION="$($VENV_PYTHON -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
+echo -e "${GREEN}✅ Virtual environment activated (Python ${VENV_VERSION})${NC}\n"
+
+if [ "$VENV_VERSION" != "3.11" ]; then
+    echo -e "${YELLOW}⚠️  Current venv is not Python 3.11. Recreate it for PyTorch support:${NC}"
+    echo "   rm -rf venv && $PYTHON_BIN -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+fi
 
 # Check Tesseract
 echo -e "${YELLOW}[3/6] Verifying Tesseract OCR...${NC}"
@@ -57,13 +72,13 @@ echo ""
 
 # Check Django
 echo -e "${YELLOW}[4/6] Checking Django configuration...${NC}"
-python3 manage.py check 2>&1 | grep -E "(System check|ERROR)" | head -1
+"$VENV_PYTHON" manage.py check 2>&1 | grep -E "(System check|ERROR)" | head -1
 echo -e "${GREEN}✅ Django configuration OK${NC}\n"
 
 # Start Backend
 echo -e "${YELLOW}[5/6] Starting backend server...${NC}"
-echo "   Command: python3 manage.py runserver 0.0.0.0:8000"
-nohup python3 manage.py runserver 0.0.0.0:8000 > logs/backend.log 2>&1 &
+echo "   Command: $VENV_PYTHON manage.py runserver 0.0.0.0:8000"
+nohup "$VENV_PYTHON" manage.py runserver 0.0.0.0:8000 > logs/backend.log 2>&1 &
 BACKEND_PID=$!
 sleep 3
 if kill -0 $BACKEND_PID 2>/dev/null; then

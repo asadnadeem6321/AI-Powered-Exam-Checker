@@ -199,7 +199,7 @@ Metadata:
 - ✅ Tesseract OCR 5.5.2
   - Including all dependencies: leptonica, libtiff, webp, pango, etc.
 - ✅ Homebrew package manager
-- ✅ Python 3.14
+- ✅ Python 3.11 (recommended for PyTorch/SBERT)
 
 ---
 
@@ -210,7 +210,7 @@ Metadata:
 # Terminal 1: Backend
 cd "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker"
 source venv/bin/activate
-python3 manage.py runserver 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8000
 
 # Terminal 2: Frontend
 cd frontend
@@ -293,11 +293,11 @@ python3 manage.py check
 
 ## ⚠️ Important Notes
 
-### Python 3.14 Limitation
-- PyTorch not available for Python 3.14
-- Semantic similarity scoring disabled
-- Full question extraction still works via Claude AI
-- Not a blocker - Claude API provides excellent results
+### Python 3.11 Recommendation
+- PyTorch is supported in Python 3.11
+- SBERT semantic similarity runs normally when torch + sentence-transformers are installed
+- Full question extraction and evaluation continue to work as before
+- Use Python 3.11 for the most stable local ML runtime
 
 ### API Rate Limits
 - Claude API has usage limits

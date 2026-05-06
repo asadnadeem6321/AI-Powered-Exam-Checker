@@ -32,10 +32,14 @@ Save the file.
 ### Terminal 1: Start Backend
 ```bash
 cd "/Users/macbookpro/Downloads/AI Powered Exam Checker/AI-Powered-Exam-Checker"
+python3.11 -m venv venv   # run once if you are rebuilding from Python 3.14
 source venv/bin/activate
 pip install -r requirements.txt
-python3 manage.py runserver
+pip install torch torchvision torchaudio
+python manage.py runserver
 ```
+
+> If you already have a Python 3.14 virtual environment, delete `venv/` and recreate it with Python 3.11 before installing packages.
 
 ### Terminal 2: Start Frontend (Open NEW terminal)
 ```bash
@@ -143,7 +147,7 @@ npm start
 
 ## ⚙️ System Requirements Met
 
-✅ Python 3.8+  
+✅ Python 3.11 recommended (for PyTorch/SBERT)  
 ✅ Node.js 14+  
 ✅ macOS support (Tesseract paths configured)  
 ✅ All dependencies listed in requirements.txt  
