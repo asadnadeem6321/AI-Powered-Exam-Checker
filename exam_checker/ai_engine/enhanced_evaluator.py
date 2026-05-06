@@ -22,10 +22,15 @@ class EnhancedHybridEvaluator:
         try:
             from .sbert_handler import SBERTHandler
             from .context_scorer import DeterministicContextScorer
+            from .nli_handler import NLIHandler
             from .preprocessor import TextPreprocessor
             
             self.sbert = SBERTHandler()
             self.context_scorer = DeterministicContextScorer()
+            try:
+                self.nli = NLIHandler()
+            except Exception:
+                self.nli = None
             self.preprocessor = TextPreprocessor()
             self.similarity_weight = getattr(settings, 'SIMILARITY_WEIGHT', 0.7)
             self.context_weight = getattr(settings, 'CONTEXT_WEIGHT', 0.3)
@@ -142,6 +147,28 @@ class EnhancedHybridEvaluator:
                 final_score_pct = min(final_score_pct, relevance_cap)
 
             final_score_pct = min(100, max(0, final_score_pct))  # Clamp to 0-100
+
+            # NLI-based logical consistency check: premise=student, hypothesis=model
+            nli_info = {'entailment': 0.0, 'neutral': 0.0, 'contradiction': 0.0}
+            try:
+                if getattr(self, 'nli', None):
+                    nli_info = self.nli.analyze(student_answer, model_answer)
+            except Exception:
+                nli_info = {'entailment': 0.0, 'neutral': 0.0, 'contradiction': 0.0}
+
+            # If NLI indicates contradiction strongly, penalize to near-zero
+            contradiction_prob = nli_info.get('contradiction', 0.0)
+            entailment_prob = nli_info.get('entailment', 0.0)
+
+            if contradiction_prob >= 0.65 and contradiction_prob > entailment_prob:
+                # Strong contradiction -> near zero score
+                final_score_pct = min(final_score_pct, 5.0)
+                result_confidence = 'low'
+            elif entailment_prob >= 0.70 and entailment_prob > contradiction_prob:
+                # Strong entailment -> increase confidence (no change to score)
+                result_confidence = 'high'
+            else:
+                result_confidence = 'low' if final_score_pct < 50 else 'high'
             
             # Calculate obtained marks
             obtained_marks = None
@@ -188,6 +215,12 @@ class EnhancedHybridEvaluator:
                 'confidence': 'high' if similarity_pct >= 50 and contextual_score >= 50 else 'low'
             }
             
+            # attach NLI diagnostic info
+            result['nli'] = nli_info
+            result['nli_contradiction'] = contradiction_prob
+            result['nli_entailment'] = entailment_prob
+            result['result_confidence'] = result_confidence
+
             if result['confidence'] == 'low':
                 result['confidence_note'] = "Low confidence evaluation. Manual review recommended."
             

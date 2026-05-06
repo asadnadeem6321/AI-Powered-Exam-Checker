@@ -2,6 +2,13 @@ import React, { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { evaluationService } from '../services/examService';
 
+const sanitizeManualFeedback = (text) => {
+  if (!text || typeof text !== 'string') return text || '';
+  const idx = text.search(/RECOMMENDATIONS?:/i);
+  if (idx === -1) return text.trim();
+  return text.slice(0, idx).trim();
+};
+
 const makeRow = (id) => ({
   id,
   question_text: '',
@@ -148,7 +155,7 @@ const ManualEntryPage = () => {
             <p><strong>Grade:</strong> {result.grade}</p>
             <p><strong>Overall Feedback:</strong></p>
             <pre style={{ whiteSpace: 'pre-wrap', background: '#f6f8fa', padding: 10, borderRadius: 6 }}>
-              {result.feedback}
+              {sanitizeManualFeedback(result.feedback)}
             </pre>
           </div>
         )}
