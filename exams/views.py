@@ -20,6 +20,7 @@ from exam_checker.ai_engine.preprocessor import TextPreprocessor
 from exam_checker.exceptions import TextExtractionException, FileUploadException, GPTException
 import logging
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,26 @@ class ExamUploadView(views.APIView):
                 text_extractor = TextExtractor()
                 result = text_extractor.extract(exam.file.path)
                 
-                exam.raw_text = result['text']
+                exam.raw_text = result.get('text') if isinstance(result, dict) else result
+
+                # Basic heuristic: ensure the extracted text appears to contain questions
+                def _has_question_patterns(text):
+                    if not text or not isinstance(text, str):
+                        return False
+                    # look for common markers: 'Question', 'Q1', numeric list '1.' or 'Q 1'
+                    pattern = re.compile(r"\bquestion\b|\bq\s*\d+\b|\bq\d+\b|\b\d+\.|\boption\b|\bA\)\s|\bB\)\s|\bC\)\s", re.IGNORECASE)
+                    return bool(pattern.search(text))
+
+                if not _has_question_patterns(exam.raw_text):
+                    logger.warning(f"No question patterns detected in extracted text for exam {exam.id}")
+                    exam.status = 'failed'
+                    exam.error_message = 'No questions detected in uploaded file. Please upload a file that contains structured questions and answers.'
+                    exam.save()
+                    return Response({
+                        'error': 'No questions detected in file',
+                        'detail': 'The uploaded file does not appear to contain recognizable questions or answer choices. Please upload a compatible exam file.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
                 exam.status = 'completed'
                 exam.processed_at = timezone.now()
                 exam.save()

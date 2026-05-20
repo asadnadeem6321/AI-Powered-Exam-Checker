@@ -98,6 +98,10 @@ const LoginPage = () => {
         <p className="auth-link">
           Don't have an account? <Link to="/register">Register here</Link>
         </p>
+
+        <p className="auth-link">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
       </div>
     </div>
   );

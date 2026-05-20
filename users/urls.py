@@ -9,6 +9,10 @@ from .views import (
     user_profile,
     user_logout
 )
+from .views import (
+    password_reset_request,
+    password_reset_confirm,
+)
 
 app_name = 'users'
 
@@ -18,4 +22,6 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
     path('profile/', user_profile, name='profile'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('password-reset/', password_reset_request, name='password_reset'),
+    path('password-reset/confirm/', password_reset_confirm, name='password_reset_confirm'),
 ]

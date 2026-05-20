@@ -21,6 +21,13 @@ export const userService = {
 
   refreshToken: (refreshToken) =>
     api.post('/users/token/refresh/', { refresh: refreshToken }),
+  
+  // Password reset
+  passwordResetRequest: (email) =>
+    api.post('/users/password-reset/', { email }),
+
+  passwordResetConfirm: (uid, token, newPassword) =>
+    api.post('/users/password-reset/confirm/', { uid, token, new_password: newPassword }),
 };
 
 // Exam Services

@@ -186,9 +186,8 @@ const ResultsPage = () => {
                     Question {qEval.questionNumber}: {qEval.questionText}
                   </h3>
                   <div className="question-header-right">
-                    <span className={`q-score score-${Math.max(1, Math.min(5, Math.round(qEval.finalScore / 20)))}`}>
-                      {qEval.finalScore.toFixed(1)}/100
-                    </span>
+                    {/* Per-question: show only obtained marks out of allocated marks.
+                        Overall percentage is shown at the top of the page. */}
                     <span className="q-marks">
                       {qEval.obtainedMarks.toFixed(2)} / {qEval.marksAllocated} marks
                     </span>
