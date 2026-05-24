@@ -235,8 +235,8 @@ CLAUDE_TEMPERATURE = float(os.getenv('CLAUDE_TEMPERATURE', 0.3))
 SBERT_MODEL_NAME = os.getenv('SBERT_MODEL_NAME', 'all-MiniLM-L6-v2')
 
 # Evaluation Weights
-SIMILARITY_WEIGHT = float(os.getenv('SIMILARITY_WEIGHT', 0.6))
-CONTEXT_WEIGHT = float(os.getenv('CONTEXT_WEIGHT', 0.4))
+SIMILARITY_WEIGHT = float(os.getenv('SIMILARITY_WEIGHT', 0.7))
+CONTEXT_WEIGHT = float(os.getenv('CONTEXT_WEIGHT', 0.3))
 
 # OCR Configuration
 TESSERACT_CMD = os.getenv('TESSERACT_CMD', '/usr/local/bin/tesseract')  # macOS default

@@ -41,24 +41,29 @@ class GPTHandler:
         Returns:
             dict: Evaluation result containing score and feedback
         """
-        system_prompt = """You are an academic evaluator specializing in descriptive answer evaluation. 
+        system_prompt = """You are an academic evaluator specializing in descriptive answer evaluation.
 Your task is to evaluate student answers fairly and objectively based ONLY on the provided model answer.
 
 CRITICAL RULES:
 1. Only compare the student answer with the provided model answer
 2. Do not introduce external knowledge or information
-3. Evaluate based on: completeness, conceptual accuracy, and clarity
+3. Evaluate based on: completeness, conceptual accuracy, clarity, and coverage of expected keywords
 4. Use an educational and constructive tone
 5. Provide specific, actionable feedback
 6. Score on a scale of 0-100
 
 IMPORTANT: You MUST return your evaluation as valid JSON format (not markdown code blocks).
-Return your evaluation with the following structure:
+Return your evaluation with the following structure (include the additional diagnostic fields):
 {
     "score": <number between 0-100>,
     "completeness": <number between 0-100>,
     "accuracy": <number between 0-100>,
     "clarity": <number between 0-100>,
+    "keyword_score": <number between 0-100>,
+    "matched_keywords": ["<keyword1>", "<keyword2>"],
+    "total_expected_keywords": <integer>,
+    "length_adequacy": <number between 0-100>,
+    "structure_score": <number between 0-100>,
     "feedback": "<detailed feedback string>",
     "strengths": ["<strength 1>", "<strength 2>"],
     "weaknesses": ["<weakness 1>", "<weakness 2>"],
@@ -100,21 +105,36 @@ Please evaluate the student answer based on the model answer and provide your as
                 
                 result = json.loads(result_text)
                 
-                # Validate the response structure
+                # Validate the response structure (allow additional diagnostic fields)
                 required_keys = ['score', 'feedback']
                 if not all(key in result for key in required_keys):
                     raise ValueError("Invalid response structure from Claude")
-                
-                # Ensure score is within range
-                result['score'] = max(0, min(100, float(result['score'])))
-                
-                # Set defaults for optional fields
-                result.setdefault('completeness', result['score'])
-                result.setdefault('accuracy', result['score'])
-                result.setdefault('clarity', result['score'])
-                result.setdefault('strengths', [])
-                result.setdefault('weaknesses', [])
-                result.setdefault('suggestions', '')
+
+                # Ensure numeric fields are present and normalized
+                def _norm_num(key, default=0):
+                    try:
+                        return max(0, min(100, float(result.get(key, default))))
+                    except Exception:
+                        return default
+
+                result['score'] = _norm_num('score', 0)
+                result['completeness'] = _norm_num('completeness', result['score'])
+                result['accuracy'] = _norm_num('accuracy', result['score'])
+                result['clarity'] = _norm_num('clarity', result['score'])
+                result['keyword_score'] = _norm_num('keyword_score', result.get('keyword_score', 0))
+                result['length_adequacy'] = _norm_num('length_adequacy', result.get('length_adequacy', result['score']))
+                result['structure_score'] = _norm_num('structure_score', result.get('structure_score', result['score']))
+
+                # Ensure list fields
+                result.setdefault('matched_keywords', result.get('matched_keywords', []))
+                try:
+                    result['total_expected_keywords'] = int(result.get('total_expected_keywords', len(result['matched_keywords'])))
+                except Exception:
+                    result['total_expected_keywords'] = len(result['matched_keywords'])
+
+                result.setdefault('strengths', result.get('strengths', []))
+                result.setdefault('weaknesses', result.get('weaknesses', []))
+                result.setdefault('suggestions', result.get('suggestions', ''))
                 
                 logger.info(f"Claude evaluation completed successfully. Score: {result['score']}")
                 

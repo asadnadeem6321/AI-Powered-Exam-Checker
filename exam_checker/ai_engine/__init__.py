@@ -11,6 +11,7 @@ from .evaluator import HybridEvaluator
 from .question_extractor import QuestionExtractor
 from .segmentation import QuestionAnswerSegmenter
 from .enhanced_evaluator import EnhancedHybridEvaluator
+from .context_scorer import DeterministicContextScorer
 
 __all__ = [
     'SBERTHandler',
@@ -21,4 +22,5 @@ __all__ = [
     'QuestionExtractor',
     'QuestionAnswerSegmenter',
     'EnhancedHybridEvaluator',
+    'DeterministicContextScorer',
 ]

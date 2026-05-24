@@ -1,7 +1,7 @@
-"""
+/*
 Test Cases for React Frontend Components
 Location: frontend/src/__tests__/
-"""
+*/
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -12,7 +12,7 @@ import '@testing-library/jest-dom';
 jest.mock('../services/examService');
 
 describe('LoginPage Component', () => {
-  itsoftware.test('renders login form', () => {
+  test('renders login form', () => {
     // Test would render LoginPage and verify form elements exist
     expect(true).toBe(true); // Placeholder
   });

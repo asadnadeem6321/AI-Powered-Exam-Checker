@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/exams//extract-questions/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; color:#000; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>Page not found <span>(404)</span></h1>
+    
+    <table class="meta">
+      <tr>
+        <th>Request Method:</th>
+        <td>POST</td>
+      </tr>
+      <tr>
+        <th>Request URL:</th>
+        <td>http://127.0.0.1:8000/api/exams//extract-questions/</td>
+      </tr>
+      
+    </table>
+  </div>
+  <div id="info">
+    
+      <p>
+      Using the URLconf defined in <code>exam_checker.urls</code>,
+      Django tried these URL patterns, in this order:
+      </p>
+      <ol>
+        
+          <li>
+            
+                
+                [name='ajax_home']
+            
+          </li>
+        
+          <li>
+            
+                ajax/
+                [name='ajax_test_client']
+            
+          </li>
+        
+          <li>
+            
+                admin/
+                
+            
+          </li>
+        
+          <li>
+            
+                api/users/
+                
+            
+          </li>
+        
+          <li>
+            
+                api/exams/
+                
+            
+                upload/
+                [name='upload']
+            
+          </li>
+        
+          <li>
+            
+                api/exams/
+                
+            
+                
+                [name='list']
+            
+          </li>
+        
+          <li>
+            
+                api/exams/
+                
+            
+                &lt;int:pk&gt;/
+                [name='detail']
+            
+          </li>
+        
+          <li>
+            
+                api/exams/
+                
+            
+                &lt;int:exam_id&gt;/delete/
+                [name='delete']
+            
+          </li>
+        
+          <li>
+            
+                api/exams/
+                
+            
+                &lt;int:exam_id&gt;/extract-questions/
+                [name='extract_questions']
+            
+          </li>
+        
+          <li>
+            
+                api/evaluations/
+                
+            
+          </li>
+        
+          <li>
+            
+                ^media/(?P&lt;path&gt;.*)$
+                
+            
+          </li>
+        
+          <li>
+            
+                ^static/(?P&lt;path&gt;.*)$
+                
+            
+          </li>
+        
+      </ol>
+      <p>
+        
+          The current path, <code>api/exams//extract-questions/</code>,
+        
+        didn’t match any of these.
+      </p>
+    
+  </div>
+
+  <div id="explanation">
+    <p>
+      You’re seeing this error because you have <code>DEBUG = True</code> in
+      your Django settings file. Change that to <code>False</code>, and Django
+      will display a standard 404 page.
+    </p>
+  </div>
+</body>
+</html>

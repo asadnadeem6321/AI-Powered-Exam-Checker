@@ -25,7 +25,7 @@ def evaluate_exam_with_marks(request, exam_id):
     This endpoint:
     1. Retrieve saved Q/A pairs with marks from database
     2. Validate model answers are present
-    3. Use Enhanced Evaluator (SBERT 60% + GPT 40%)
+    3. Use Enhanced Evaluator (SBERT + deterministic context scoring)
     4. Calculate obtained marks based on scores
     5. Save evaluation results
     6. Return comprehensive feedback
@@ -114,19 +114,31 @@ def evaluate_exam_with_marks(request, exam_id):
         evaluation_obj = None
         if request.user.is_authenticated:
             try:
+                question_results = evaluation_result.get('question_results', [])
+                successful_results = [q for q in question_results if not q.get('error')]
+                avg_similarity = (
+                    sum(q.get('similarity_score', 0) for q in successful_results) / len(successful_results)
+                    if successful_results else 0
+                )
+                avg_context = (
+                    sum(q.get('contextual_score', 0) for q in successful_results) / len(successful_results)
+                    if successful_results else 0
+                )
+
                 evaluation_obj = Evaluation.objects.create(
                     exam=exam,
-                    similarity_score=0,  # Will be average of question scores
-                    contextual_score=0,
+                    similarity_score=round(avg_similarity, 2),
+                    contextual_score=round(avg_context, 2),
                     final_score=evaluation_result['percentage'],
                     overall_feedback=evaluation_result['feedback'],
                     evaluation_metadata={
                         'total_questions': evaluation_result['total_questions'],
                         'total_allocated_marks': evaluation_result['total_allocated_marks'],
                         'total_obtained_marks': evaluation_result['total_obtained_marks'],
-                        'evaluation_method': 'hybrid_with_marks',
-                        'sbert_weight': 0.6,
-                        'gpt_weight': 0.4
+                        'evaluation_method': 'hybrid_with_manual_context',
+                        'sbert_weight': 0.7,
+                        'context_weight': 0.3,
+                        'question_results': evaluation_result.get('question_results', [])
                     }
                 )
                 

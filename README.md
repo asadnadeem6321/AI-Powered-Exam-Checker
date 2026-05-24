@@ -53,7 +53,7 @@ Frontend (React.js) → REST API (Django + DRF) → AI Engine (SBERT + GPT)
 
 ## 📋 Prerequisites
 
-- Python 3.10+
+- Python 3.11 recommended for PyTorch/SBERT support
 - Node.js 16+ (for React frontend)
 - PostgreSQL 13+ (for production)
 - Redis 6+ (for Celery)
@@ -74,7 +74,7 @@ cd "AI-Powered Exam Checker"
 #### Create Virtual Environment
 
 ```powershell
-python -m venv venv
+python3.11 -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
@@ -82,7 +82,10 @@ python -m venv venv
 
 ```powershell
 pip install -r requirements.txt
+pip install torch torchvision torchaudio
 ```
+
+If Python 3.11 is not your default interpreter, explicitly use the 3.11 binary when creating the virtual environment. Do not reuse a Python 3.14 venv for PyTorch.
 
 #### Install Tesseract OCR (Windows)
 
