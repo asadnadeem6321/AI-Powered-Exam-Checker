@@ -11,6 +11,8 @@ import UploadPage from './pages/UploadPage';
 import QuestionFormPage from './pages/QuestionFormPage';
 import ManualEntryPage from './pages/ManualEntryPage';
 import ResultsPage from './pages/ResultsPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -28,6 +30,8 @@ function App() {
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/question-form" element={<QuestionFormPage />} />
               <Route path="/manual-entry" element={<ManualEntryPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               
               {/* Protected Routes */}
               <Route 

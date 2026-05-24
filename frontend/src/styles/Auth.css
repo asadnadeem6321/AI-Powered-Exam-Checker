@@ -1,14 +1,41 @@
 .auth-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 80px);
+  min-height: 100vh;
   padding: 28px;
+}
+
+.welcome-block {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.welcome-block h2 {
+  font-size: 28px;
+  margin: 0;
+  color: var(--gray-900);
+  font-weight: 800;
+}
+
+.welcome-block .welcome-text {
+  margin-top: 8px;
+  color: var(--gray-600);
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 15px;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 520px;
+  margin-top: 18px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 22px;
@@ -34,6 +61,19 @@
   margin-top: 8px;
 }
 
+.login-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.login-actions .btn {
+  margin-top: 0;
+}
+
 .auth-link {
   text-align: center;
   color: var(--gray-500);
@@ -50,14 +90,59 @@
   color: var(--primary-dark);
 }
 
+.auth-small-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.auth-small-link:hover {
+  color: var(--primary-dark);
+  background-color: rgba(0, 0, 0, 0.04);
+  text-decoration: underline;
+}
+
+.auth-small-link:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 1024px) {
+  .auth-card {
+    max-width: 460px;
+  }
+}
+
 @media (max-width: 768px) {
   .auth-container {
     padding: 18px;
+    min-height: calc(100vh - 40px);
+    align-items: flex-start;
+  }
+
+  .welcome-block {
+    position: relative;
+    top: 0;
+    margin-bottom: 18px;
   }
 
   .auth-card {
     padding: 26px 20px;
     border-radius: 16px;
+  }
+
+  .login-actions {
+    gap: 10px;
   }
 
   .auth-card h1 {

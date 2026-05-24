@@ -42,6 +42,11 @@ const LoginPage = () => {
 
   return (
     <div className="auth-container">
+      <div className="welcome-block">
+        <h2>Welcome to AI Powered Exam Checker by Muhammad Asad Nadeem</h2>
+        <p className="welcome-text">We're glad you're here. To get started, register your account and continue as a guest.</p>
+      </div>
+
       <div className="auth-card">
         <h1>Login</h1>
         
@@ -76,13 +81,17 @@ const LoginPage = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : 'Login'}
-          </button>
+          <div className="login-actions">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Login'}
+            </button>
+
+            <Link to="/forgot-password" className="auth-small-link">Forgot password?</Link>
+          </div>
         </form>
 
         <div className="divider">OR</div>
@@ -98,6 +107,7 @@ const LoginPage = () => {
         <p className="auth-link">
           Don't have an account? <Link to="/register">Register here</Link>
         </p>
+        
       </div>
     </div>
   );

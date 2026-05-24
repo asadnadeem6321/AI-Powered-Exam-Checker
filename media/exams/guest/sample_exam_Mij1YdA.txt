@@ -1,0 +1,22 @@
+MATHEMATICS FINAL EXAM
+
+Question 1: What is the derivative of x^2?
+A) 2x
+B) x
+C) 2
+D) x^2
+Correct Answer: A
+
+Question 2: Solve: 2x + 5 = 15
+A) x = 5
+B) x = 10
+C) x = 3
+D) x = 4
+Correct Answer: A
+
+Question 3: What is the area of a circle with radius 5?
+A) 25π
+B) 10π
+C) 5π
+D) π
+Correct Answer: A
